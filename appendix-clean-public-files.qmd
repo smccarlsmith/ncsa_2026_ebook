@@ -1,0 +1,41 @@
+# Appendix: Practice Ideas — Working With Public Files {.unnumbered}
+
+Once the core chapters feel comfortable, the best way to solidify the skills in this book is practicing on real, publicly available education data rather than only the Static File sample. A few specific ideas, roughly ordered from most to least guided.
+
+## Idea 1: Clean and standardize a state-published Excel report
+
+Most state education agencies publish A–F results, report card data, or assessment summaries as multi-tab Excel workbooks intended for human reading — merged header cells, inconsistent column names across tabs, footnote rows mixed into the data, multiple title rows before the actual header. Download one publicly posted report from your own state's website and put [Common Functions](#sec-common-functions) and [Importing From Everywhere](#sec-importing-everywhere) to direct use:
+
+- Use `read_excel(..., skip = n)` to skip past title rows that aren't real headers
+- Run `janitor::clean_names()` immediately, and expect it to need a follow-up `rename()` pass for anything it can't fully standardize on its own
+- Use the brute-force `bind_rows()` approach from [Importing From Everywhere](#sec-importing-everywhere) across every tab, then revisit with `map_dfr()` once you understand what you're combining
+- Produce a short validation summary (row counts per tab, missing-value counts per column) as practice for the pattern from [Project Walkthrough 1](#sec-project-1)
+
+This is the single most directly useful exercise, because it's the exact category of messy, real-world file you'll keep encountering professionally.
+
+## Idea 2: Build a multi-year trend file from separately published annual files
+
+Many states publish one separate file per year rather than one combined multi-year file. Download three or four years of the same report (say, statewide proficiency rates by subject) and practice:
+
+- Reading each year's file separately, tagging each with its year before combining (the same `source_sheet`-style tagging pattern from [Project Walkthrough 1](#sec-project-1))
+- Using `bind_rows()` or `map_dfr()` to combine them into one long-format trend dataset
+- Building a `ggplot2` line chart (from [Visualization](#sec-visualization)) showing the trend over time, faceted by subject or school type
+
+This is good practice specifically for the reshaping mindset in [Reshaping](#sec-reshaping) — you'll likely find that what looks like "the same report" each year occasionally has slightly different column names or structures year to year, which is itself a useful, realistic problem to solve.
+
+## Idea 3: Compare your own state's public file structure to another state's
+
+If you work in one state's accountability system, pulling a public assessment or accountability file from a *different* state is a good way to practice general-purpose cleaning instincts rather than ones already tailored to a file structure you know well. Look for:
+
+- Different column naming conventions for conceptually similar fields (your `Performance` may be another state's `AchievementLevel`)
+- Different missing-data conventions (some states use blank cells, others use `-1`, `N/A` as literal text, or `*` for suppressed small-n cells)
+
+Practice writing a `case_when()` or `rename()` mapping that translates the unfamiliar file's structure into something matching your own Static File's conventions — a genuinely useful skill if your role ever involves cross-state comparisons or multi-state research.
+
+## Idea 4: Recreate a public-facing dashboard chart
+
+Most state report card or accountability websites have at least one public-facing chart or table (a proficiency-by-subgroup bar chart, a multi-year trend line, a school comparison table). Pick one, find or approximate the underlying public data, and try to recreate it using `ggplot2` and `gt` from [Visualization](#sec-visualization). This is good practice specifically because you have a known target to match — it's much easier to tell whether your chart is "right" when you're matching something that already exists, rather than building from scratch with no reference point.
+
+## A general note on all of these
+
+Public education data files are excellent practice material precisely because they're real and imperfect — inconsistent headers, surprise merged cells, footnote text mixed into data rows, and the occasional genuinely confusing column. That friction is exactly what this book intends to prepare you for. The Static File sample used throughout the rest of this book was deliberately realistic, but it was also clean enough to teach from without fighting the file itself on every example — these exercises are where you get the practice of fighting the file, which is a normal and permanent part of the job.

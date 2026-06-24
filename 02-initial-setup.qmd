@@ -1,0 +1,72 @@
+# Initial Setup {#sec-initial-setup}
+
+This chapter gets you from nothing installed to a working R environment. Do this once; you won't revisit most of it.
+
+## Install R
+
+R itself is the underlying language and engine — separate from any editor or interface you'll use to write it. Download it from the Comprehensive R Archive Network (CRAN):
+
+- **Windows / Mac:** <https://cran.r-project.org>, choose your platform, run the installer with default settings.
+
+You won't interact with R directly very often after this — almost everything you do will happen inside Positron, covered next. Installing R is simply making the engine available for Positron to use.
+
+## Install Positron
+
+Positron is the editor (technically, the IDE — integrated development environment) you'll actually work in day to day. More on why it's a strong choice in [Meet Positron](#sec-meet-positron); for now, just get it installed:
+
+- Download from <https://positron.posit.co>
+- Run the installer with default settings
+- Open Positron once after installing to confirm it launches correctly
+
+## Install packages
+
+A package is a bundle of pre-written functions someone else built and shared — conceptually similar to an Excel add-in, except the available universe is enormous (CRAN alone hosts over 20,000 packages).
+
+Open Positron, find the **Console** pane (bottom-left by default), and run:
+
+```{r}
+#| eval: false
+
+install.packages("tidyverse")
+```
+
+This single command installs a whole family of packages that work together consistently — `dplyr`, `ggplot2`, `readr`, `tidyr`, and more — covering the large majority of what this book teaches. It can take a minute or two; that's normal.
+
+A few additional packages you'll want for specific chapters later in this book, worth installing now while you're at it:
+
+```{r}
+#| eval: false
+
+install.packages(c("readxl", "writexl", "janitor", "googlesheets4",
+                    "DBI", "odbc", "duckdb", "arrow",
+                    "gt", "DT", "plotly", "glue", "skimr"))
+```
+
+**Installing is a one-time action per machine.** You won't run `install.packages()` again for these unless you switch computers or need a newer version later.
+
+## Load libraries
+
+Installing a package puts it on your machine. **Loading** a package makes it available in your current R session — you do this every time you start working, not just once:
+
+```{r}
+library(tidyverse)
+```
+
+A simple way to think about the difference: `install.packages()` is like buying a tool and putting it in your garage. `library()` is like carrying that tool into the room you're working in today. You only need to buy it once, but you need to bring it into the room each time you want to use it.
+
+## A new file
+
+You'll work primarily in two file types throughout this book:
+
+- **A new Quarto document** (`.qmd`) — combines narrative text and executable code chunks together, and is what produces the reports, slides, and reference documents this book itself is built from. Covered in more depth in [Quarto Essentials](#sec-quarto-essentials).
+- **A new R file** (`.R`) — a plain script, just code, no prose. Better suited to automation tasks meant to run unattended (like the example in [Project Walkthrough 1](#sec-project-1)).
+
+In Positron, both are created the same way: **File → New File**, then choose the type, or use the icon in the top toolbar.
+
+## Start an R session
+
+Before you can run any code, Positron needs an active R session — the actual running R process your code executes against. Positron will often start one automatically when you open a `.R` or `.qmd` file, but if you ever see no console activity or an error about no interpreter being found, you can start one manually from the interpreter picker in the top status bar (see [Meet Positron](#sec-meet-positron) for exactly where this lives).
+
+![](images/positron_session.png)
+
+With R, Positron, and your core packages installed, you're ready to open your first real file — which is exactly what the next chapter does.

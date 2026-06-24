@@ -1,0 +1,1085 @@
+[
+  {
+    "objectID": "07-common-functions.html",
+    "href": "07-common-functions.html",
+    "title": "7  Common Functions",
+    "section": "",
+    "text": "7.1 Cleaning messy column names first\nThis chapter covers the small set of functions that will carry the majority of your day-to-day work. Each one maps to something you already do in Excel, SAS, or Access — the goal here is naming the R equivalent and giving you a working recipe, not re-teaching the underlying logic you already have.\nAll examples continue using static_file, loaded back in Your First Import.\nReal files rarely arrive with clean, consistent column names. Before doing anything else, it’s worth knowing about janitor::clean_names() — genuinely one of the highest-value, lowest-effort functions in this entire book:\nlibrary(janitor)\n\nstatic_file_new_names &lt;- static_file |&gt; clean_names()\n\nnames(static_file_new_names)[1:10]\n\n [1] \"static_file_data_id\" \"school_code\"         \"school_name\"        \n [4] \"school_ctds\"         \"district_code\"       \"district_name\"      \n [7] \"district_ctds\"       \"charter\"             \"county\"             \n[10] \"aoi\"\nThis converts inconsistent capitalization, spaces, and punctuation in column names into a single consistent format (typically snake_case) automatically. Our Static File sample already has clean names, so you won’t see dramatic changes here — but the moment you load a real Excel export with column headers like \"School Name \" (trailing space included) or \"% Proficient\", this single line will save you real frustration. Use it by habit on every new file you import.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#select-choosing-columns",
+    "href": "07-common-functions.html#select-choosing-columns",
+    "title": "7  Common Functions",
+    "section": "7.2 select() — choosing columns",
+    "text": "7.2 select() — choosing columns\nThe equivalent of hiding columns in Excel, except explicit about what you’re keeping rather than what you’re hiding:\n\nstatic_file |&gt; select(SchoolName, DistrictName, Subject, Performance)\n\n# A tibble: 35,560 × 4\n   SchoolName DistrictName Subject Performance\n   &lt;chr&gt;      &lt;chr&gt;        &lt;chr&gt;         &lt;dbl&gt;\n 1 School 67  District 6   ELA              NA\n 2 School 67  District 6   ELA               1\n 3 School 67  District 6   ELA               1\n 4 School 67  District 6   ELA              NA\n 5 School 67  District 6   ELA               3\n 6 School 67  District 6   ELA              NA\n 7 School 67  District 6   ELA              NA\n 8 School 67  District 6   ELA              NA\n 9 School 67  District 6   ELA              NA\n10 School 67  District 6   ELA              NA\n# ℹ 35,550 more rows\n\nstatic_file |&gt; select(-FirstName, -MiddleName, -LastName)   # drop specific columns, keep the rest\n\n# A tibble: 35,560 × 77\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1            85577         67 School 67          67            6 District 6  \n 2            85580         67 School 67          67            6 District 6  \n 3            85585         67 School 67          67            6 District 6  \n 4            85587         67 School 67          67            6 District 6  \n 5            85602         67 School 67          67            6 District 6  \n 6            85605         67 School 67          67            6 District 6  \n 7            85612         67 School 67          67            6 District 6  \n 8            85615         67 School 67          67            6 District 6  \n 9            85618         67 School 67          67            6 District 6  \n10            85619         67 School 67          67            6 District 6  \n# ℹ 35,550 more rows\n# ℹ 71 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;,\n#   Ethnicity &lt;chr&gt;, Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;,\n#   Homeless &lt;dbl&gt;, Foster &lt;dbl&gt;, FAY &lt;dbl&gt;, DistrictFAY &lt;dbl&gt;, …\n\nstatic_file |&gt; select(starts_with(\"EL\"))   # all EL-related columns at once\n\n# A tibble: 35,560 × 10\n      EL ELGroup ELFEP ELAMathWindow ELFAY ELTested ELProf ELGrowth ELTestType  \n   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;       \n 1     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n 2     1       5     1             1     1        1      4        1 AZELLA Stag…\n 3     1       0     1             0     0        0     NA       NA &lt;NA&gt;        \n 4     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n 5     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n 6     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n 7     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n 8     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n 9     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n10     0       0     0             1     0        0     NA       NA &lt;NA&gt;        \n# ℹ 35,550 more rows\n# ℹ 1 more variable: ELTestDate &lt;dttm&gt;",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#filter-choosing-rows",
+    "href": "07-common-functions.html#filter-choosing-rows",
+    "title": "7  Common Functions",
+    "section": "7.3 filter() — choosing rows",
+    "text": "7.3 filter() — choosing rows\nThe equivalent of AutoFilter, except it returns a clean result rather than just hiding rows visually:\n\nstatic_file |&gt; filter(Subject == \"Math\")\n\n# A tibble: 10,694 × 80\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1            86607         67 School 67          67            6 District 6  \n 2            86610         67 School 67          67            6 District 6  \n 3            86615         67 School 67          67            6 District 6  \n 4            86617         67 School 67          67            6 District 6  \n 5            86632         67 School 67          67            6 District 6  \n 6            86635         67 School 67          67            6 District 6  \n 7            86642         67 School 67          67            6 District 6  \n 8            86645         67 School 67          67            6 District 6  \n 9            86648         67 School 67          67            6 District 6  \n10            86649         67 School 67          67            6 District 6  \n# ℹ 10,684 more rows\n# ℹ 74 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …\n\nstatic_file |&gt; filter(ScaleScore &gt;= 450 & Subject == \"ELA\")\n\n# A tibble: 4,166 × 80\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1           139020        100 School 100        100            7 District 7  \n 2           139032        100 School 100        100            7 District 7  \n 3           139036        100 School 100        100            7 District 7  \n 4           139038        100 School 100        100            7 District 7  \n 5           139040        100 School 100        100            7 District 7  \n 6           139049        100 School 100        100            7 District 7  \n 7           139056        100 School 100        100            7 District 7  \n 8           139060        100 School 100        100            7 District 7  \n 9           139068        100 School 100        100            7 District 7  \n10           139070        100 School 100        100            7 District 7  \n# ℹ 4,156 more rows\n# ℹ 74 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …\n\nstatic_file |&gt; filter(County %in% c(\"Maricopa\", \"Pima\"))\n\n# A tibble: 34,083 × 80\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1            85577         67 School 67          67            6 District 6  \n 2            85580         67 School 67          67            6 District 6  \n 3            85585         67 School 67          67            6 District 6  \n 4            85587         67 School 67          67            6 District 6  \n 5            85602         67 School 67          67            6 District 6  \n 6            85605         67 School 67          67            6 District 6  \n 7            85612         67 School 67          67            6 District 6  \n 8            85615         67 School 67          67            6 District 6  \n 9            85618         67 School 67          67            6 District 6  \n10            85619         67 School 67          67            6 District 6  \n# ℹ 34,073 more rows\n# ℹ 74 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#mutate-creating-or-changing-a-column",
+    "href": "07-common-functions.html#mutate-creating-or-changing-a-column",
+    "title": "7  Common Functions",
+    "section": "7.4 mutate() — creating or changing a column",
+    "text": "7.4 mutate() — creating or changing a column\nThe equivalent of adding a formula column, applied automatically to every row (recall vectorized behavior from Fundamental Concepts):\n\nstatic_file |&gt;\n  mutate(scale_score_rounded = round(ScaleScore))\n\n# A tibble: 35,560 × 81\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1            85577         67 School 67          67            6 District 6  \n 2            85580         67 School 67          67            6 District 6  \n 3            85585         67 School 67          67            6 District 6  \n 4            85587         67 School 67          67            6 District 6  \n 5            85602         67 School 67          67            6 District 6  \n 6            85605         67 School 67          67            6 District 6  \n 7            85612         67 School 67          67            6 District 6  \n 8            85615         67 School 67          67            6 District 6  \n 9            85618         67 School 67          67            6 District 6  \n10            85619         67 School 67          67            6 District 6  \n# ℹ 35,550 more rows\n# ℹ 75 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#if_else-and-case_when-conditional-logic",
+    "href": "07-common-functions.html#if_else-and-case_when-conditional-logic",
+    "title": "7  Common Functions",
+    "section": "7.5 if_else() and case_when() — conditional logic",
+    "text": "7.5 if_else() and case_when() — conditional logic\nif_else() handles a single yes/no condition — the direct equivalent of Excel’s IF():\n\nstatic_file |&gt;\n  mutate(is_high_school = if_else(StudentGrade %in% c(\"9\",\"10\",\"11\",\"12\"), \"High School\", \"Not High School\"))\n\n# A tibble: 35,560 × 81\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1            85577         67 School 67          67            6 District 6  \n 2            85580         67 School 67          67            6 District 6  \n 3            85585         67 School 67          67            6 District 6  \n 4            85587         67 School 67          67            6 District 6  \n 5            85602         67 School 67          67            6 District 6  \n 6            85605         67 School 67          67            6 District 6  \n 7            85612         67 School 67          67            6 District 6  \n 8            85615         67 School 67          67            6 District 6  \n 9            85618         67 School 67          67            6 District 6  \n10            85619         67 School 67          67            6 District 6  \n# ℹ 35,550 more rows\n# ℹ 75 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …\n\n\ncase_when() handles multiple conditions in sequence — the equivalent of a nested IF() chain, but far easier to read and far harder to make a logic error in, since it’s evaluated top to bottom and stops at the first matching condition:\n\nstatic_file |&gt;\n  mutate(performance_label = case_when(\n    Performance == 1 ~ \"Minimally Proficient\",\n    Performance == 2 ~ \"Partially Proficient\",\n    Performance == 3 ~ \"Proficient\",\n    Performance == 4 ~ \"Highly Proficient\",\n    TRUE              ~ NA_character_\n  ))\n\n# A tibble: 35,560 × 81\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1            85577         67 School 67          67            6 District 6  \n 2            85580         67 School 67          67            6 District 6  \n 3            85585         67 School 67          67            6 District 6  \n 4            85587         67 School 67          67            6 District 6  \n 5            85602         67 School 67          67            6 District 6  \n 6            85605         67 School 67          67            6 District 6  \n 7            85612         67 School 67          67            6 District 6  \n 8            85615         67 School 67          67            6 District 6  \n 9            85618         67 School 67          67            6 District 6  \n10            85619         67 School 67          67            6 District 6  \n# ℹ 35,550 more rows\n# ℹ 75 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …\n\n\nThe final TRUE ~ ... line is your catch-all — anything that didn’t match an earlier condition lands here. We’ve set it to NA_character_ (an explicitly-typed missing text value) since Performance is NA for students who weren’t assessed, and we want that to flow through cleanly rather than becoming a stray label.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#arrange-sorting",
+    "href": "07-common-functions.html#arrange-sorting",
+    "title": "7  Common Functions",
+    "section": "7.6 arrange() — sorting",
+    "text": "7.6 arrange() — sorting\n\nstatic_file |&gt; arrange(DistrictName, desc(ScaleScore))\n\n# A tibble: 35,560 × 80\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1           254561        311 School 311        311          104 District 104\n 2           260100        311 School 311        311          104 District 104\n 3           260453        311 School 311        311          104 District 104\n 4           253763        311 School 311        311          104 District 104\n 5           255125        311 School 311        311          104 District 104\n 6           255829        311 School 311        311          104 District 104\n 7           254001        311 School 311        311          104 District 104\n 8           259708        311 School 311        311          104 District 104\n 9           256685        311 School 311        311          104 District 104\n10           254418        311 School 311        311          104 District 104\n# ℹ 35,550 more rows\n# ℹ 74 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …\n\n\nAscending by default; wrap a column in desc() to reverse just that one — useful when, as above, you want districts alphabetical but scores highest-first within each.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#rename-renaming-columns",
+    "href": "07-common-functions.html#rename-renaming-columns",
+    "title": "7  Common Functions",
+    "section": "7.7 rename() — renaming columns",
+    "text": "7.7 rename() — renaming columns\n\nstatic_file |&gt; rename(school = SchoolName, district = DistrictName)\n\n# A tibble: 35,560 × 80\n   StaticFileDataId SchoolCode school    SchoolCTDS DistrictCode district  \n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;          &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;     \n 1            85577         67 School 67         67            6 District 6\n 2            85580         67 School 67         67            6 District 6\n 3            85585         67 School 67         67            6 District 6\n 4            85587         67 School 67         67            6 District 6\n 5            85602         67 School 67         67            6 District 6\n 6            85605         67 School 67         67            6 District 6\n 7            85612         67 School 67         67            6 District 6\n 8            85615         67 School 67         67            6 District 6\n 9            85618         67 School 67         67            6 District 6\n10            85619         67 School 67         67            6 District 6\n# ℹ 35,550 more rows\n# ℹ 74 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#count-quick-frequency-tables",
+    "href": "07-common-functions.html#count-quick-frequency-tables",
+    "title": "7  Common Functions",
+    "section": "7.8 count() — quick frequency tables",
+    "text": "7.8 count() — quick frequency tables\n\nstatic_file |&gt; count(Subject)\n\n# A tibble: 4 × 2\n  Subject     n\n  &lt;chr&gt;   &lt;int&gt;\n1 ELA     10694\n2 Math    10694\n3 Sci      5937\n4 &lt;NA&gt;     8235\n\nstatic_file |&gt; count(County, Charter)   # cross-tab style: every County x Charter combination\n\n# A tibble: 5 × 3\n  County   Charter     n\n  &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;\n1 Maricopa       0 14857\n2 Maricopa       1 13872\n3 Pima           0  2768\n4 Pima           1  2586\n5 rural          1  1477",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#str_detect-pattern-matching-inside-text",
+    "href": "07-common-functions.html#str_detect-pattern-matching-inside-text",
+    "title": "7  Common Functions",
+    "section": "7.9 str_detect() — pattern matching inside text",
+    "text": "7.9 str_detect() — pattern matching inside text\nPart of the stringr package (included in the tidyverse), useful for searching within a text column — similar in spirit to Excel’s SEARCH() or a SQL LIKE clause:\n\nstatic_file |&gt; filter(str_detect(SchoolName, \"Online\"))\n\n# A tibble: 0 × 80\n# ℹ 80 variables: StaticFileDataId &lt;dbl&gt;, SchoolCode &lt;dbl&gt;, SchoolName &lt;chr&gt;,\n#   SchoolCTDS &lt;dbl&gt;, DistrictCode &lt;dbl&gt;, DistrictName &lt;chr&gt;,\n#   DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;, AOI &lt;dbl&gt;,\n#   Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;, …",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#round-controlling-decimal-precision",
+    "href": "07-common-functions.html#round-controlling-decimal-precision",
+    "title": "7  Common Functions",
+    "section": "7.10 round() — controlling decimal precision",
+    "text": "7.10 round() — controlling decimal precision\n\nstatic_file |&gt; mutate(scale_score_rounded = round(ScaleScore, 1))   # one decimal place\n\n# A tibble: 35,560 × 81\n   StaticFileDataId SchoolCode SchoolName SchoolCTDS DistrictCode DistrictName\n              &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;       \n 1            85577         67 School 67          67            6 District 6  \n 2            85580         67 School 67          67            6 District 6  \n 3            85585         67 School 67          67            6 District 6  \n 4            85587         67 School 67          67            6 District 6  \n 5            85602         67 School 67          67            6 District 6  \n 6            85605         67 School 67          67            6 District 6  \n 7            85612         67 School 67          67            6 District 6  \n 8            85615         67 School 67          67            6 District 6  \n 9            85618         67 School 67          67            6 District 6  \n10            85619         67 School 67          67            6 District 6  \n# ℹ 35,550 more rows\n# ℹ 75 more variables: DistrictCTDS &lt;dbl&gt;, Charter &lt;dbl&gt;, County &lt;chr&gt;,\n#   AOI &lt;dbl&gt;, Alternative &lt;dbl&gt;, JTED &lt;dbl&gt;, Private &lt;dbl&gt;, SchoolTypeS &lt;dbl&gt;,\n#   SchoolTypeF &lt;dbl&gt;, FederalModel &lt;chr&gt;, StateModel &lt;chr&gt;, FiscalYear &lt;dbl&gt;,\n#   SAISID &lt;dbl&gt;, FirstName &lt;chr&gt;, MiddleName &lt;chr&gt;, LastName &lt;chr&gt;,\n#   BirthDate &lt;chr&gt;, Gender &lt;chr&gt;, StudentGrade &lt;dbl&gt;, Ethnicity &lt;chr&gt;,\n#   Cohort &lt;dbl&gt;, SPED &lt;dbl&gt;, IncomeEligibility1and2 &lt;dbl&gt;, Homeless &lt;dbl&gt;, …",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "07-common-functions.html#putting-several-together",
+    "href": "07-common-functions.html#putting-several-together",
+    "title": "7  Common Functions",
+    "section": "7.11 Putting several together",
+    "text": "7.11 Putting several together\nThis is where the pipe (|&gt;) starts to earn its keep — chaining several of the functions above into a single readable sequence:\n\nstatic_file |&gt;\n  filter(Subject == \"ELA\", !is.na(Performance)) |&gt;\n  select(SchoolName, DistrictName, Performance) |&gt;\n  mutate(performance_label = case_when(\n    Performance == 1 ~ \"Minimally Proficient\",\n    Performance == 2 ~ \"Partially Proficient\",\n    Performance == 3 ~ \"Proficient\",\n    Performance == 4 ~ \"Highly Proficient\"\n  )) |&gt;\n  arrange(DistrictName)\n\n# A tibble: 7,254 × 4\n   SchoolName DistrictName Performance performance_label   \n   &lt;chr&gt;      &lt;chr&gt;              &lt;dbl&gt; &lt;chr&gt;               \n 1 School 311 District 104           1 Minimally Proficient\n 2 School 311 District 104           1 Minimally Proficient\n 3 School 311 District 104           1 Minimally Proficient\n 4 School 311 District 104           1 Minimally Proficient\n 5 School 311 District 104           3 Proficient          \n 6 School 311 District 104           1 Minimally Proficient\n 7 School 311 District 104           2 Partially Proficient\n 8 School 311 District 104           2 Partially Proficient\n 9 School 311 District 104           1 Minimally Proficient\n10 School 311 District 104           2 Partially Proficient\n# ℹ 7,244 more rows\n\n\nRead top to bottom as one sentence: take the Static File, keep only assessed ELA records, keep just these columns, add a readable label, then sort by district. Each line is a single, understandable step — and the whole sequence reads roughly the way you’d describe the task out loud to a colleague.\nThe next chapter builds directly on this same pattern to tackle the task you’ll do more than almost any other in accountability work: summarizing data by group.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Common Functions</span>"
+    ]
+  },
+  {
+    "objectID": "01-why-r-first.html",
+    "href": "01-why-r-first.html",
+    "title": "1  Why R First",
+    "section": "",
+    "text": "1.1 What Python is genuinely better at\nIf you’re going to invest real time learning a programming language for education data work, the honest question is: why R, and not Python — especially when Python is more general-purpose and shows up more often in broader data science and machine learning conversations?\nIt’s worth being upfront about this rather than pretending the choice is obvious. Python tends to win on:\nIf your work were mostly software engineering, Python would likely be the better starting point. But that’s not most assessment and accountability work.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why R First</span>"
+    ]
+  },
+  {
+    "objectID": "01-why-r-first.html#what-python-is-genuinely-better-at",
+    "href": "01-why-r-first.html#what-python-is-genuinely-better-at",
+    "title": "1  Why R First",
+    "section": "",
+    "text": "Stability and interoperability — it’s the default language of choice in most general software engineering contexts, and integrates more easily into production systems, web applications, and APIs outside of data analysis.\nGeneral-purpose use — Python is a better choice if you’re building something that isn’t primarily about analyzing a dataset (an application, a scheduled automation system, a web scraper).\nMachine learning and AI tooling — the dominant ML/AI libraries (PyTorch, TensorFlow, most LLM tooling) are Python-first, with R support often secondary or absent.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why R First</span>"
+    ]
+  },
+  {
+    "objectID": "01-why-r-first.html#what-r-is-genuinely-better-at-for-this-work-specifically",
+    "href": "01-why-r-first.html#what-r-is-genuinely-better-at-for-this-work-specifically",
+    "title": "1  Why R First",
+    "section": "1.2 What R is genuinely better at, for this work specifically",
+    "text": "1.2 What R is genuinely better at, for this work specifically\n\nIt works out of the box for data analysis. Reading a file, summarizing it, and making a publication-quality chart takes fewer lines and less setup friction in R than in Python, where you’re more often assembling several libraries yourself.\nA more controlled, uniform ecosystem. The “tidyverse” family of packages (which you’ll use constantly in this book) was designed by a small, coordinated team to work together consistently — function names, argument order, and output formats follow shared conventions. Python’s data ecosystem is powerful but more fragmented, with more ways to do the same thing.\nVisualization and presentation. R’s ggplot2 (and the broader “grammar of graphics” approach you’ll learn in Visualization) remains one of the most expressive and widely respected charting tools in any language, and R’s document-generation tooling (Quarto, which this entire book is built with) makes producing polished reports and slides remarkably straightforward.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why R First</span>"
+    ]
+  },
+  {
+    "objectID": "01-why-r-first.html#the-most-important-reason-a-shared-language-with-your-field",
+    "href": "01-why-r-first.html#the-most-important-reason-a-shared-language-with-your-field",
+    "title": "1  Why R First",
+    "section": "1.3 The most important reason: a shared language with your field",
+    "text": "1.3 The most important reason: a shared language with your field\nHere’s the argument that matters most for your day-to-day work: there is a growing, active community in education data and accountability that works in R, and that shared language is very valuable.\nA few concrete examples:\n\nThe SGP package — used to calculate Student Growth Percentiles, a core concept in state accountability systems — is written in R. If your state’s growth model uses SGP methodology, you may already work with some R code and data.\nResearchers like Nathan Dadey are actively building suites of tools that work directly with the same data format you’re already producing for SGP and related calculations. Tools built by and for people doing exactly your kind of work are shareable and adaptable in R.\nWhen you hit a wall, there may be an analyst who’s solved your exact problem in R, in a forum post, a GitHub repo.\nFinally, since your analysis will exist fully as text, any part of the process can be copy/pasted to an AI tool; with many education researchers working in R, you can often receive answers very tailored to your needs.\n\nLearning the language your professional community already speaks can reduce the time you spend troubleshooting.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why R First</span>"
+    ]
+  },
+  {
+    "objectID": "01-why-r-first.html#youre-not-choosing-a-side-forever",
+    "href": "01-why-r-first.html#youre-not-choosing-a-side-forever",
+    "title": "1  Why R First",
+    "section": "1.4 You’re not choosing a side forever",
+    "text": "1.4 You’re not choosing a side forever\nThis isn’t a permanent fork in the road. There’s a growing “polyglot” movement actively working to align R and Python rather than treat them as competitors. Wes McKinney, co-creator of Python’s pandas, and Hadley Wickham, creator of R’s tidyverse — two people who have each individually shaped the modern data science landscape — both work at the same nonprofit, Posit, building tools designed to let the two languages work together and share strengths (Arrow and Parquet, which you’ll encounter in Database Connections, are good examples of this convergence in practice).\nPractically, this means: nearly everything you learn here — thinking in data frames, vectorized operations, the logic of filtering and grouping and joining — transfers directly if you ever do pick up Python later. You’re not learning a dead-end skill. You’re learning the dialect your field already speaks, with a clear bridge to learn Python if and when you need it.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why R First</span>"
+    ]
+  },
+  {
+    "objectID": "02-initial-setup.html",
+    "href": "02-initial-setup.html",
+    "title": "2  Initial Setup",
+    "section": "",
+    "text": "2.1 Install R\nThis chapter gets you from nothing installed to a working R environment. Do this once; you won’t revisit most of it.\nR itself is the underlying language and engine — separate from any editor or interface you’ll use to write it. Download it from the Comprehensive R Archive Network (CRAN):\nYou won’t interact with R directly very often after this — almost everything you do will happen inside Positron, covered next. Installing R is simply making the engine available for Positron to use.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Initial Setup</span>"
+    ]
+  },
+  {
+    "objectID": "02-initial-setup.html#install-r",
+    "href": "02-initial-setup.html#install-r",
+    "title": "2  Initial Setup",
+    "section": "",
+    "text": "Windows / Mac: https://cran.r-project.org, choose your platform, run the installer with default settings.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Initial Setup</span>"
+    ]
+  },
+  {
+    "objectID": "02-initial-setup.html#install-positron",
+    "href": "02-initial-setup.html#install-positron",
+    "title": "2  Initial Setup",
+    "section": "2.2 Install Positron",
+    "text": "2.2 Install Positron\nPositron is the editor (technically, the IDE — integrated development environment) you’ll actually work in day to day. More on why it’s a strong choice in Meet Positron; for now, just get it installed:\n\nDownload from https://positron.posit.co\nRun the installer with default settings\nOpen Positron once after installing to confirm it launches correctly",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Initial Setup</span>"
+    ]
+  },
+  {
+    "objectID": "02-initial-setup.html#install-packages",
+    "href": "02-initial-setup.html#install-packages",
+    "title": "2  Initial Setup",
+    "section": "2.3 Install packages",
+    "text": "2.3 Install packages\nA package is a bundle of pre-written functions someone else built and shared — conceptually similar to an Excel add-in, except the available universe is enormous (CRAN alone hosts over 20,000 packages).\nOpen Positron, find the Console pane (bottom-left by default), and run:\n\ninstall.packages(\"tidyverse\")\n\nThis single command installs a whole family of packages that work together consistently — dplyr, ggplot2, readr, tidyr, and more — covering the large majority of what this book teaches. It can take a minute or two; that’s normal.\nA few additional packages you’ll want for specific chapters later in this book, worth installing now while you’re at it:\n\ninstall.packages(c(\"readxl\", \"writexl\", \"janitor\", \"googlesheets4\",\n                    \"DBI\", \"odbc\", \"duckdb\", \"arrow\",\n                    \"gt\", \"DT\", \"plotly\", \"glue\", \"skimr\"))\n\nInstalling is a one-time action per machine. You won’t run install.packages() again for these unless you switch computers or need a newer version later.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Initial Setup</span>"
+    ]
+  },
+  {
+    "objectID": "02-initial-setup.html#load-libraries",
+    "href": "02-initial-setup.html#load-libraries",
+    "title": "2  Initial Setup",
+    "section": "2.4 Load libraries",
+    "text": "2.4 Load libraries\nInstalling a package puts it on your machine. Loading a package makes it available in your current R session — you do this every time you start working, not just once:\n\nlibrary(tidyverse)\n\nA simple way to think about the difference: install.packages() is like buying a tool and putting it in your garage. library() is like carrying that tool into the room you’re working in today. You only need to buy it once, but you need to bring it into the room each time you want to use it.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Initial Setup</span>"
+    ]
+  },
+  {
+    "objectID": "02-initial-setup.html#a-new-file",
+    "href": "02-initial-setup.html#a-new-file",
+    "title": "2  Initial Setup",
+    "section": "2.5 A new file",
+    "text": "2.5 A new file\nYou’ll work primarily in two file types throughout this book:\n\nA new Quarto document (.qmd) — combines narrative text and executable code chunks together, and is what produces the reports, slides, and reference documents this book itself is built from. Covered in more depth in Quarto Essentials.\nA new R file (.R) — a plain script, just code, no prose. Better suited to automation tasks meant to run unattended (like the example in Project Walkthrough 1).\n\nIn Positron, both are created the same way: File → New File, then choose the type, or use the icon in the top toolbar.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Initial Setup</span>"
+    ]
+  },
+  {
+    "objectID": "02-initial-setup.html#start-an-r-session",
+    "href": "02-initial-setup.html#start-an-r-session",
+    "title": "2  Initial Setup",
+    "section": "2.6 Start an R session",
+    "text": "2.6 Start an R session\nBefore you can run any code, Positron needs an active R session — the actual running R process your code executes against. Positron will often start one automatically when you open a .R or .qmd file, but if you ever see no console activity or an error about no interpreter being found, you can start one manually from the interpreter picker in the top status bar (see Meet Positron for exactly where this lives).\n\nWith R, Positron, and your core packages installed, you’re ready to open your first real file — which is exactly what the next chapter does.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Initial Setup</span>"
+    ]
+  },
+  {
+    "objectID": "03-meet-positron.html",
+    "href": "03-meet-positron.html",
+    "title": "3  Meet Positron",
+    "section": "",
+    "text": "3.1 Why Positron\nPositron is a relatively new IDE built specifically for data science work, and it’s a strong starting point for this book for a few concrete reasons:",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Meet Positron</span>"
+    ]
+  },
+  {
+    "objectID": "03-meet-positron.html#why-positron",
+    "href": "03-meet-positron.html#why-positron",
+    "title": "3  Meet Positron",
+    "section": "",
+    "text": "It’s data-science-first, not adapted from a general-purpose code editor after the fact — the layout and built-in panes are designed around the rhythm of working with data, looking at tables, and viewing visualizations.\nIt’s R and Python compatible. If you ever do pick up Python later (see the closing note in Why R First), you don’t need to learn an entirely new editor — Positron handles both natively.\nIt’s actively developed and current, built and maintained by Posit, the same organization behind much of the tidyverse and Quarto tooling this book relies on throughout.\nIt will feel familiar if you’ve used VS Code. Positron is built on the same underlying editor framework as Visual Studio Code, one of the most widely used code editors across all of software development. If you’ve ever poked around VS Code for any reason, a lot of Positron’s layout, shortcuts, and extension model will already feel recognizable.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Meet Positron</span>"
+    ]
+  },
+  {
+    "objectID": "03-meet-positron.html#positron-basics",
+    "href": "03-meet-positron.html#positron-basics",
+    "title": "3  Meet Positron",
+    "section": "3.2 Positron basics",
+    "text": "3.2 Positron basics\nWhen you open Positron, you’ll generally see four areas worth knowing by name, since the rest of this book will refer to them directly:\nScript editor — the main pane, usually centered or top-left, where you write and edit your .R or .qmd files. This is where your actual code and prose live.\n\nConsole — typically bottom-left. This is where code actually executes and where you’ll see printed output, errors, and messages. You can type directly into the console for quick one-off checks, but most of your work will be written in the script editor and sent to the console to run.\n\nVariables pane — typically top-right. Shows every object currently loaded in your R session: every data frame, vector, or value you’ve created, along with its type and a quick preview. This is a very useful tool for examining your data sets.\n\nFrom the variable pane, you can also open your data sets to interact with them like viewing, filtering, and sorting a spreadsheet. After performing the desired changes, you can click a button to export your actions as code. There is also a helpful sidebar that shows summary visuals and statistics for each column.\n\nViewer — typically bottom-right. This is where rendered output shows up: data frame previews in table form, plots, and rendered Quarto documents when you preview them. The viewer has a pop out button to let you see output larger in a web browser.\n\nYou don’t need to memorize exact pane positions — Positron’s layout is adjustable, and the exact arrangement can vary by version. What matters is recognizing these four roles when you see them.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Meet Positron</span>"
+    ]
+  },
+  {
+    "objectID": "03-meet-positron.html#running-code",
+    "href": "03-meet-positron.html#running-code",
+    "title": "3  Meet Positron",
+    "section": "3.3 Running code",
+    "text": "3.3 Running code\nTo run a line (or selected block) of code from the script editor into the console:\n\nWindows: Ctrl + Enter\nMac: Cmd + Enter\nRun entire chunk Shift + Enter\n\nThese are the most-used keyboard shortcuts. Write a line in your script, press the shortcut, watch it execute in the console below.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Meet Positron</span>"
+    ]
+  },
+  {
+    "objectID": "03-meet-positron.html#checking-your-r-interpreter",
+    "href": "03-meet-positron.html#checking-your-r-interpreter",
+    "title": "3  Meet Positron",
+    "section": "3.4 Checking your R interpreter",
+    "text": "3.4 Checking your R interpreter\nPositron needs to know which R installation to actually run your code against — this matters more once you’re juggling multiple projects or package environments, but it’s worth knowing where to look from day one. Look in the top status bar of the Positron window for an interpreter indicator (it will typically show an R version number). Clicking it lets you select a different interpreter if you have more than one R installation, or restart the current session if something gets into a broken state.\n\nIf your code won’t run and the console shows no response at all, this is the first place to check — it usually means no interpreter is currently selected or running.\nWith the basics of the interface in hand, it’s time to actually open a real file — let’s start with your first import.",
+    "crumbs": [
+      "Orientation",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Meet Positron</span>"
+    ]
+  },
+  {
+    "objectID": "04-your-first-import.html",
+    "href": "04-your-first-import.html",
+    "title": "4  Your First Import",
+    "section": "",
+    "text": "4.1 The dataset you’ll use throughout this book\nLet’s skip the abstract examples. You’re going to load a real file and look at it, right now.\nEvery example from here forward uses the same file: a synthetic, realistic version of an Arizona Department of Education Static File — the kind of student-level enrollment and assessment file that sits at the center of A–F accountability calculations. It has 80 columns and tens of thousands of student records across 30 schools, with the same structure, the same messiness, and the same kinds of questions you’d actually be asked to answer in real accountability work.\nAlongside the data file, you have a codebook — a separate reference describing exactly what every column means and what values it can take. Open it now and skim it; you’ll come back to it constantly. Column names like FAY, SGP_CCR, or ELFEP are not self-explanatory on first glance, and that’s normal — this is real accountability terminology, not something you’re expected to intuit.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Your First Import</span>"
+    ]
+  },
+  {
+    "objectID": "04-your-first-import.html#loading-the-file",
+    "href": "04-your-first-import.html#loading-the-file",
+    "title": "4  Your First Import",
+    "section": "4.2 Loading the file",
+    "text": "4.2 Loading the file\n\nlibrary(tidyverse)\n\nstatic_file &lt;- read_csv(\"data/static_file_sample.csv\")\n\nThat’s it. One function call, and 35,000+ rows of student data are now sitting in an object called static_file, ready to work with.\nA couple of things worth noticing immediately:\n\nread_csv() is the tidyverse’s function for reading comma-separated files — faster and more predictable than base R’s older read.csv().\nThe arrow (&lt;-) is how you assign something a name in R. Read static_file &lt;- read_csv(...) as “take the result of reading this file, and call it static_file.” You’ll use &lt;- constantly; it’s R’s equivalent of typing a value into a named cell and having it stick.\nNothing printed to your screen. Unlike opening a file in Excel, reading data into R doesn’t automatically show it to you — it just loads it into memory under the name you gave it. Looking at it is a separate, deliberate step, which is exactly what comes next.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Your First Import</span>"
+    ]
+  },
+  {
+    "objectID": "04-your-first-import.html#actually-looking-at-what-you-just-loaded",
+    "href": "04-your-first-import.html#actually-looking-at-what-you-just-loaded",
+    "title": "4  Your First Import",
+    "section": "4.3 Actually looking at what you just loaded",
+    "text": "4.3 Actually looking at what you just loaded\n\nglimpse(static_file)\n\nFor this example, I’m showing only the first 10 columns, not all 80\n\n\nRows: 35,560\nColumns: 10\n$ StaticFileDataId &lt;dbl&gt; 85577, 85580, 85585, 85587, 85602, 85605, 85612, 8561…\n$ SchoolCode       &lt;dbl&gt; 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 6…\n$ SchoolName       &lt;chr&gt; \"School 67\", \"School 67\", \"School 67\", \"School 67\", \"…\n$ SchoolCTDS       &lt;dbl&gt; 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 6…\n$ DistrictCode     &lt;dbl&gt; 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,…\n$ DistrictName     &lt;chr&gt; \"District 6\", \"District 6\", \"District 6\", \"District 6…\n$ DistrictCTDS     &lt;dbl&gt; 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,…\n$ Charter          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…\n$ County           &lt;chr&gt; \"Maricopa\", \"Maricopa\", \"Maricopa\", \"Maricopa\", \"Mari…\n$ AOI              &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…\n\n\nglimpse() gives you a compact, column-by-column preview — every column name, its data type, and the first several values, oriented so you can scan 80 columns without horizontal scrolling. This is usually the very first thing you’ll run after loading any new file.\nA few more orientation commands worth running right away, especially on a file this wide:\n\nnrow(static_file)       # how many rows (records)?\n\n[1] 35560\n\nncol(static_file)        # how many columns?\n\n[1] 80\n\nn_distinct(static_file$SAISID)   # how many *unique students* — not the same as rows!\n\n[1] 17462\n\n\nThat last one matters more than it might look. This file has far more rows than unique students — a single student can appear multiple times (different subjects tested, multiple years of EL evaluation history, and so on). Run that line and you’ll see the gap directly. This is your first real lesson in thinking about education data: a row is a record, not necessarily a person, and knowing the difference is the kind of thing that quietly breaks an analysis if you don’t check it up front.\nIf you want a fuller statistical snapshot of every column at once — not just types, but distributions, missing-value counts, and quick summary stats — the skimr package (installed back in Initial Setup) is worth knowing about:\n\nlibrary(skimr)\nskim(static_file)\n\nFor this example, I’m showing only a few selected columns, not all 80\n\n\n\nData summary\n\n\nName\nselect(…)\n\n\nNumber of rows\n35560\n\n\nNumber of columns\n16\n\n\n_______________________\n\n\n\nColumn type frequency:\n\n\n\ncharacter\n7\n\n\nnumeric\n9\n\n\n________________________\n\n\n\nGroup variables\nNone\n\n\n\nVariable type: character\n\n\n\n\n\n\n\n\n\n\n\n\n\nskim_variable\nn_missing\ncomplete_rate\nmin\nmax\nempty\nn_unique\nwhitespace\n\n\n\n\nSchoolName\n0\n1.00\n9\n11\n0\n30\n0\n\n\nStateModel\n0\n1.00\n2\n11\n0\n5\n0\n\n\nFirstName\n0\n1.00\n2\n18\n0\n5419\n0\n\n\nLastName\n0\n1.00\n1\n21\n0\n7638\n0\n\n\nGender\n0\n1.00\n1\n1\n0\n2\n0\n\n\nSubject\n8235\n0.77\n3\n4\n0\n3\n0\n\n\nAssessmentFamily\n0\n1.00\n4\n11\n0\n7\n0\n\n\n\nVariable type: numeric\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nskim_variable\nn_missing\ncomplete_rate\nmean\nsd\np0\np25\np50\np75\np100\nhist\n\n\n\n\nSAISID\n0\n1.00\n900345419.83\n275568.23\n900000241\n900131118\n900258435\n900514141\n901135167\n▇▅▃▁▁\n\n\nStudentGrade\n0\n1.00\n9.02\n2.78\n-1\n8\n10\n11\n12\n▁▁▁▅▇\n\n\nSPED\n0\n1.00\n0.07\n0.25\n0\n0\n0\n0\n1\n▇▁▁▁▁\n\n\nFAY\n0\n1.00\n1.01\n1.10\n0\n0\n1\n2\n3\n▇▅▁▂▃\n\n\nScaleScore\n12998\n0.63\n1489.62\n1344.30\n1\n26\n1307\n2563\n3776\n▇▅▁▃▃\n\n\nPerformance\n16055\n0.55\n2.04\n1.02\n1\n1\n2\n3\n4\n▇▆▁▅▂\n\n\nSGP_CCR\n20416\n0.43\n47.65\n29.18\n1\n22\n47\n73\n99\n▇▇▆▆▆\n\n\nSGP_CCR_Category\n20416\n0.43\n0.94\n0.82\n0\n0\n1\n2\n2\n▇▁▇▁▇\n\n\nSGT\n26003\n0.27\n61.63\n24.81\n1\n42\n65\n83\n99\n▂▅▅▇▇\n\n\n\n\n\nFor a file with 80 columns, this is often more useful than scrolling through read column names and to look for missing or duplicate values.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Your First Import</span>"
+    ]
+  },
+  {
+    "objectID": "04-your-first-import.html#what-you-just-did-in-plain-terms",
+    "href": "04-your-first-import.html#what-you-just-did-in-plain-terms",
+    "title": "4  Your First Import",
+    "section": "4.4 What you just did, in plain terms",
+    "text": "4.4 What you just did, in plain terms\nYou loaded a file, and asked four key questions: what’s in here, how big is it, how many of these rows represent the same person, and what does each column generally look like? That’s probably a similar process to you what you already do when opening any new data set, but you just did it as two or three lines of code instead of a sequence of clicks. That creates a record of exactly what you did, so the process can be saved, repeated, and eventually automated.\nThis really pays off when you have to repeat a process. I’ve had workflows in spreadsheet where I had to write down a lengthy set of instructions to make sure I reproduced the same steps in each tab. Sometimes I could record a macro, but if I missed a step, or found a mistake, it could be problematic to undo all the actions. When working in R, you don’t alter your original file, and you can quickly and easily alter steps and simply re-run the code.\nThe next chapter gives more details on the foundational pieces you just used — data frames, vectors, etc. We’ll continue using the data you have loaded.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Your First Import</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html",
+    "href": "05-fundamental-concepts.html",
+    "title": "5  Fundamental Concepts",
+    "section": "",
+    "text": "5.1 Variable assignment\nYou already have static_file loaded from the last chapter. Everything in this chapter names a piece of what you’re already looking at. If you’ve shut down your R session, you will need to re-run the code to read in the data.\nWhen you read the contents of the csv file, you assigned it to a variable called static_file (you can call it anything you like), so the code static_file &lt;- read_csv(...) is an assignment. The arrow &lt;- takes whatever’s on the right and stores it under the name on the left. Without the arrow, R would still read the contents of the file, but the data wouldn’t be saved to view or work with.\nAnything can be assigned a name this way: a data frame, a single number, a short set of values. Once assigned, that name persists in your session (visible in the Variables pane from Meet Positron) until you clear it or close R.\nHere’s an example. The code below removes all the duplicate values in the Subjects column and saves the unique subject names to a variable called test_subjects\nlibrary(tidyverse)\n\nstatic_file &lt;- read_csv(\"data/static_file_sample.csv\")\ntest_subjects &lt;- unique(static_file$Subject)\n\n# Show the results\ntest_subjects\n\n[1] \"ELA\"  \"Math\" \"Sci\"  NA",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html#data-frames",
+    "href": "05-fundamental-concepts.html#data-frames",
+    "title": "5  Fundamental Concepts",
+    "section": "5.2 Data frames",
+    "text": "5.2 Data frames\nstatic_file is a data frame — a rectangular table of rows and columns, exactly like a tab in a spreadsheet or a table in a database. Each column holds one consistent type of data (text, whole numbers, decimals, dates, or TRUE/FALSE logical values).\nYou can see what type of object is assigned to a variable by using the class() function. Calling class() on static_file tells you it is a data frame.\n\nclass(static_file)\n\n[1] \"spec_tbl_df\" \"tbl_df\"      \"tbl\"         \"data.frame\" \n\n\nIt’s important to know that each column in the data frame can only include values that are the same data type. You’ve probable seen little green triangle in Excel cells warning you that numbers are stored as text. You might see this in something like a ScaleScore column. You might have cells with values of 240, 480, and 362 pts. Because the final value contains letters, it means everything in that column is stored as text and you won’t be able to use any of the numbers for mathematical operations. You would need clean the data and change it to a numeric column. When we used the glimpse() function, it showed the class of each column in the data frame.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html#vectors",
+    "href": "05-fundamental-concepts.html#vectors",
+    "title": "5  Fundamental Concepts",
+    "section": "5.3 Vectors",
+    "text": "5.3 Vectors\nA single column pulled out of a data frame is a vector — a sequence of values, all the same type. You can pull one out using $. For the example below, I’ll print only the first 10 “cells”.\n\nstatic_file$ScaleScore\n\n\n\n [1] 425  13  10 421  20  NA 411 416 421  NA\n\n\nA vector doesn’t have to come from a data frame, you can build one directly:\n\nsample_grades &lt;- c(3, 4, 5, 6)\nsample_grades\n\n[1] 3 4 5 6\n\n\nc() (“combine”) is how you build a vector from individual values by hand. You’ll use it constantly, especially with filter() (as you’ll see in the next chapter).",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html#vectorized-behavior",
+    "href": "05-fundamental-concepts.html#vectorized-behavior",
+    "title": "5  Fundamental Concepts",
+    "section": "5.4 Vectorized behavior",
+    "text": "5.4 Vectorized behavior\nThis is one of the most important mental models to walk away with. In a spreadsheet, you write a formula once and drag it down an entire column. R does the equivalent automatically — operations apply to every “cell” of a column at once, with no dragging, no loop, no “fill down”.\nFor example, we can look at the ScaleScore column. For clarity, I’ll only show the values first 10 “cells”.\n\nstatic_file$ScaleScore\n\n\n\n [1] 425  13  10 421  20  NA 411 416 421  NA\n\n\nIf I add five to the column, they syntax is just to say Column + 5. 5 will be added to every row in that column. Again, I’ll just show the values in the first 10 “cells”.\n\n# Every scale score, increased by 5 points, all at once\nstatic_file$ScaleScore + 5\n\n\n\n [1] 430  18  15 426  25  NA 416 421 426  NA\n\n\nHere’s another example using a logical operation, asking whether each “cell” in the ScaleScore column is greater than 450. R will return a vector of TRUE or FALSE for each element.\n\n# A TRUE/FALSE flag for every single row, simultaneously\nstatic_file$ScaleScore &gt; 450\n\n\n\n [1] FALSE FALSE FALSE FALSE FALSE    NA FALSE FALSE FALSE    NA\n\n\nIf you’ve ever worked with array formulas or named ranges in spreadsheets, this may feel familiar.\nThere’s no step where R goes row by row asking you what to do next — the whole column transforms in one motion. This concept is responsible for most of why R code tends to be short and easily readable: you’re describing the operation once, and it’s understood to apply everywhere. Once you get used to it, it starts to feel natural since it is written almost the same way you would say it out load: “ScaleScore plus 5” rather than a cell reference like C7 + 5 followed by C8 + 5. It also helps avoid mistakes like copy/paste errors, not dragging far enough, or accidentally deleting a formula from one cell.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html#lists",
+    "href": "05-fundamental-concepts.html#lists",
+    "title": "5  Fundamental Concepts",
+    "section": "5.5 Lists",
+    "text": "5.5 Lists\nA vector requires every element to be the same type. A list is more flexible — it can hold a mix of types, including other data frames or vectors, bundled together. When I first started programming, I struggled with this concept and when it might be used. One of the most common uses is to store several data frames together. This would be similar to the concept of a “workbook” that holds several tabs. Each tab in the workbook can be completely different, similarly each element of a list can be different. That’s an oversimplified explanation, but bundling several data frames together is a common use for lists.\nThe code below creates a list with 3 elements: 2 data frames (student_list and school_list) and, to show how lists can hold different objects, a plot called chart. This would be analagous to a spreadsheet with two data tabs and one chart tab.\n\n# Create the list\nmy_list &lt;- list(\n  students = distinct(static_file, SAISID, FirstName, LastName), \n  schools = distinct(static_file, DistrictCode, DistrictName, SchoolCode, SchoolName), \n  prof_growth_plot = prof_growth_viz\n)\n\n# glimpse the first item (student data)\nglimpse(my_list$students)\n\nRows: 17,462\nColumns: 3\n$ SAISID    &lt;dbl&gt; 900044061, 900044064, 900044069, 900044071, 900044086, 90004…\n$ FirstName &lt;chr&gt; \"Ailen\", \"Waseem\", \"Maribel\", \"Sunshine\", \"Seauna\", \"Sameera…\n$ LastName  &lt;chr&gt; \"el-Ally\", \"Dorrell\", \"Draker\", \"al-Shaheen\", \"Hernandez\", \"…\n\n# glimpse the second item (school data)\nglimpse(my_list$schools)\n\nRows: 30\nColumns: 4\n$ DistrictCode &lt;dbl&gt; 6, 6, 7, 7, 104, 182, 183, 197, 256, 256, 301, 311, 346, …\n$ DistrictName &lt;chr&gt; \"District 6\", \"District 6\", \"District 7\", \"District 7\", \"…\n$ SchoolCode   &lt;dbl&gt; 67, 95, 99, 100, 311, 493, 494, 564, 656, 657, 713, 732, …\n$ SchoolName   &lt;chr&gt; \"School 67\", \"School 95\", \"School 99\", \"School 100\", \"Sch…\n\n# View the plot\nmy_list$prof_growth_plot\n\n\n\n\n\nWhen you’re starting, you probably won’t use lists very often, but it’s good to know they exist, and you’ll see one of the most common uses (reading and combining multiple spreadsheets) later in this book (see Importing From Everywhere).",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html#the-pipe",
+    "href": "05-fundamental-concepts.html#the-pipe",
+    "title": "5  Fundamental Concepts",
+    "section": "5.6 The pipe",
+    "text": "5.6 The pipe\nYou’ve already seen $ used to pull a column out. The pipe, written |&gt; , is how you chain a sequence of steps together. For me, it took some to wrap my head around the concept. I was used to spreadsheets functions which are evaluated “inside out”: the first function you read is the last one performed, and earlier functions are nested inside parentheses. The pipe syntax makes your code much more readable, it creates a list of sequential steps. Each step performs the function, and sends the result to the next line.\nThe code below uses the pipe operator to create a data set of charter schools in 4 steps:\n\nCreate a copy of static_file by assigning it to a variable called charter_schools\nFilter the data to rows with a value of 1 in the Charter column\nSelect only the SchoolCode and SchoolName columns\nRemove duplicates using the distinct function\n\n\ncharter_schools &lt;- static_file |&gt;\n  filter(Charter == 1) |&gt;\n  select(SchoolCode, SchoolName) |&gt; \n  distinct()\n\n# glimpse the new data frame\nglimpse(charter_schools)\n\nRows: 15\nColumns: 2\n$ SchoolCode &lt;dbl&gt; 99, 100, 311, 493, 494, 564, 656, 657, 713, 732, 783, 809, …\n$ SchoolName &lt;chr&gt; \"School 99\", \"School 100\", \"School 311\", \"School 493\", \"Sch…\n\n\nWithout the pipe, the same operation requires nesting function calls inside each other, which gets hard to read fast as steps accumulate. Below is the same code, written without the pipe (similar to a spreadsheet set of nested formulas)\n\ncharter_schools &lt;- distinct(select(filter(static_file, Charter == 1)))\n\nYou’ll see |&gt; in almost every code example for the rest of this book — it’s less a separate concept to learn than a connector that makes everything else more readable.\nYou may also encounter an older version of the pipe, %&gt;%, in other people’s code or older tutorials — it comes from the magrittr package and behaves almost identically. |&gt; is now built directly into base R and is the current recommended default; this book uses it consistently.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html#nas-rs-version-of-a-blank-cell",
+    "href": "05-fundamental-concepts.html#nas-rs-version-of-a-blank-cell",
+    "title": "5  Fundamental Concepts",
+    "section": "5.7 NAs — R’s version of a blank cell",
+    "text": "5.7 NAs — R’s version of a blank cell\nYou likely noticed NA values scattered throughout the examples above and in static_file when you ran glimpse() — particularly in columns like Performance, ScaleScore, or Passing, for students who weren’t tested. NA is R’s explicit way of representing missing data — the equivalent of a blank cell in Excel, except R refuses to silently ignore it the way a spreadsheet formula sometimes will.\nThis matters in practice because NA is contagious in calculations unless you account for it. Essentially, R will not assume the meaning of missing data on its own. You need to explicitly tell it how to handle any missing data in calculations. Take a look at the examples below.\n\n#returns NA, because there is at least one missing value\nmean(static_file$ScaleScore)          \n\n[1] NA\n\n# tell R explicitly to ignore NAs first\nmean(static_file$ScaleScore, na.rm = TRUE)   \n\n[1] 1489.616\n\n\nna.rm = TRUE (“NA, remove”) is something you’ll type often. R’s refusal to quietly average over missing values without your explicit permission is a feature, not a bug — it forces you to make a conscious decision about how to handle missing data, and helps avoid accidents, rather than getting a number that silently includes (or excludes) it without your knowledge.\nTo check how many missing values you have in a column, you sum up any “cell” that is NA:\n\nsum(is.na(static_file$ScaleScore))\n\n[1] 12998",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "05-fundamental-concepts.html#basic-operators",
+    "href": "05-fundamental-concepts.html#basic-operators",
+    "title": "5  Fundamental Concepts",
+    "section": "5.8 Basic operators",
+    "text": "5.8 Basic operators\nThese operators may look familiar, especially if you have used a SQL WHERE clause. The specific R syntax is different in some cases.\nThe most important syntax to notice is the equals operator: ==. I think of it this way: a single equal sign, = is like a statement. It’s used for assignment and says one value is equal to another. For example, the code below creates a variable called my_number and says it is equal to 1.\n\nmy_number = 1\n\n# Print the value of the variable, number\nprint(my_number)\n\n[1] 1\n\n\nThe double equal sign, == is more like a question, asking whether the two items are equal. The result of == will answer your question with a TRUE or FALSE. The code below asks whether my_number is equal to certain values:\n\n# Is the number 3?\nmy_number == 3\n\n[1] FALSE\n\n# Is the number 1?\nmy_number == 1\n\n[1] TRUE\n\n\nBecause the == operator returns a TRUE or FALSE value, it can be used in filtering operations, e.g., filter to include only results where the answer to the question is TRUE.\nThe operators below also create TRUE or FALSE tests. You’ll use these constantly inside filter(), which is covered in the chapter Common Functions.\n\n\n\n\n\n\n\n\nOperator\nMeaning\nExample\n\n\n\n\n==\nequals (note: two equals signs — one is reserved for assignment in some contexts)\nCharter == 1\n\n\n!=\nnot equal to\nCounty != \"Maricopa\"\n\n\n&gt;, &lt;, &gt;=, &lt;=\ngreater/less than (or equal)\nScaleScore &gt;= 450\n\n\n&\nand\nCharter == 1 & County == \"Pima\"\n\n\n|\nor\nSubject == \"ELA\" | Subject == \"Math\"\n\n\n%in%\nvalue is one of several\nCounty %in% c(\"Maricopa\", \"Pima\")\n\n\n!\nnot / negation\n!is.na(ScaleScore)",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Fundamental Concepts</span>"
+    ]
+  },
+  {
+    "objectID": "06-quarto-essentials.html",
+    "href": "06-quarto-essentials.html",
+    "title": "6  Quarto Essentials",
+    "section": "",
+    "text": "6.1 What a Quarto document actually is\nEverything you’ve run so far has lived in a plain script. This chapter introduces the document format this entire book is written in, and that you’ll use for most real deliverables going forward.\nA .qmd file mixes two things in one document: ordinary prose, written in plain Markdown, and executable code, sitting in marked-off sections called chunks. When you render the document, Quarto runs every code chunk, captures its output (tables, plots, printed values), and weaves that output directly into the surrounding prose to produce a finished document — HTML, Word, PDF, or slides.\nIf you’ve ever built an Excel workbook with cells, a chart, and a text box explaining what the chart means, sitting next to each other — a Quarto document does the same job, except the “chart” and the “explanation” are generated and rendered together from one source, every single time you run it, with no risk of the picture and the explanation drifting out of sync after someone edits one but not the other.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Quarto Essentials</span>"
+    ]
+  },
+  {
+    "objectID": "06-quarto-essentials.html#creating-a-code-chunk",
+    "href": "06-quarto-essentials.html#creating-a-code-chunk",
+    "title": "6  Quarto Essentials",
+    "section": "6.2 Creating a code chunk",
+    "text": "6.2 Creating a code chunk\nIn a .qmd file, a chunk is a fenced-off block, opened and closed with three backticks, with the language specified in curly braces:\n\n::: {.cell}\n\n```{.r .cell-code}\nstatic_file |&gt; filter(Charter == 1) |&gt; nrow()\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] 17935\n```\n\n\n:::\n:::\n\nInside Positron, you can insert one quickly with the keyboard shortcut Ctrl + Alt + I (Windows) or Cmd + Option + I (Mac), or by typing the fence characters directly.\nTo run just that one chunk, click the small green play arrow that appears in the chunk’s top-right corner in the editor, or place your cursor inside it and use the same Ctrl/Cmd + Enter shortcut from Meet Positron.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Quarto Essentials</span>"
+    ]
+  },
+  {
+    "objectID": "06-quarto-essentials.html#chunk-options",
+    "href": "06-quarto-essentials.html#chunk-options",
+    "title": "6  Quarto Essentials",
+    "section": "6.3 Chunk options",
+    "text": "6.3 Chunk options\nYou can control how a chunk behaves and what shows up in your final document using #| options at the top of the chunk:\n\n\n[1] 17935\n\n\nA few you’ll use often:\n\necho: false — run the code, but don’t show the code itself in the final document (only its output)\neval: false — show the code, but don’t actually run it (useful for illustrating syntax without needing live data)\nmessage: false / warning: false — suppress informational messages and warnings from cluttering your rendered output",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Quarto Essentials</span>"
+    ]
+  },
+  {
+    "objectID": "06-quarto-essentials.html#the-yaml-header",
+    "href": "06-quarto-essentials.html#the-yaml-header",
+    "title": "6  Quarto Essentials",
+    "section": "6.4 The YAML header",
+    "text": "6.4 The YAML header\nEvery Quarto document opens with a fenced block of settings called the YAML header, between two lines of three dashes:\n---\ntitle: \"School Performance Summary\"\nformat: html\n---\nThis is where you set document-wide options — title, author, output format, and more. A couple of settings worth knowing now:\n---\ntitle: \"School Performance Summary\"\nformat:\n  html:\n    embed-resources: true\n---\nembed-resources: true bundles all images, styles, and supporting files directly into a single output .html file — important if you intend to share that file with someone else and don’t want broken images because a folder got separated from it. This is particularly relevant for slideshow output (revealjs), where you’ll want one self-contained file to hand off or present from.\nFor Word documents specifically, you can point Quarto at an existing .docx as a formatting template using reference-doc, so your output inherits an organization’s existing letterhead, fonts, and styles rather than Quarto’s defaults:\nformat:\n  docx:\n    reference-doc: ade-template.docx",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Quarto Essentials</span>"
+    ]
+  },
+  {
+    "objectID": "06-quarto-essentials.html#inline-code",
+    "href": "06-quarto-essentials.html#inline-code",
+    "title": "6  Quarto Essentials",
+    "section": "6.5 Inline code",
+    "text": "6.5 Inline code\nYou can drop a single computed value directly into a sentence of prose, rather than only in a chunk’s table or plot output:\n\n# This dataset includes `r length(unique(static_file$SchoolName))` schools.\n\nWhen rendered, that backtick-r-expression is replaced with the actual computed number — and critically, it updates automatically every time you re-render against new data. This is a small thing with a large payoff for accountability reporting specifically: a sentence like “32 schools met the threshold this year” never goes stale, because it’s not typed text, it’s a live calculation.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Quarto Essentials</span>"
+    ]
+  },
+  {
+    "objectID": "06-quarto-essentials.html#previewing-and-rendering",
+    "href": "06-quarto-essentials.html#previewing-and-rendering",
+    "title": "6  Quarto Essentials",
+    "section": "6.6 Previewing and rendering",
+    "text": "6.6 Previewing and rendering\nTwo related but distinct actions:\n\nPreview — click the Preview button at the top of the editor (or Ctrl/Cmd + Shift + K) to render the document and see the result, typically opening in the Viewer pane or your browser. This is what you’ll do constantly while building a document.\nRender — produces the actual output file (.html, .docx, etc.) saved to disk, ready to share. Preview generally does this for you automatically behind the scenes.\n\nYou now have everything mechanically necessary to follow along in your own .qmd file for the rest of this book. The next several chapters return to the data itself — starting with the small set of functions that will carry the large majority of your day-to-day work.",
+    "crumbs": [
+      "Your First Data, Then the Concepts Behind It",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Quarto Essentials</span>"
+    ]
+  },
+  {
+    "objectID": "08-group-summarize.html",
+    "href": "08-group-summarize.html",
+    "title": "8  Group, Summarize, and the Percentage-by-Group Pattern",
+    "section": "",
+    "text": "8.1 group_by() and summarize()\nIf pivot tables are the single Excel skill you use most in accountability work, this chapter is its direct R equivalent — and the pattern you’ll reach for constantly.\nstatic_file |&gt;\n  group_by(SchoolName) |&gt;\n  summarize(\n    n_students    = n(),\n    avg_scale_score = mean(ScaleScore, na.rm = TRUE),\n    pct_passing   = mean(Passing, na.rm = TRUE)\n  )\nMap this directly onto a pivot table: group_by() defines your “rows” (here, one row per school), and each line inside summarize() is a “values” field with whatever aggregation you want — n() for a count, mean() for an average, sum(), median(), sd() for standard deviation, and so on.\nOne detail worth noticing: mean(Passing, na.rm = TRUE) is doing double duty here. Since Passing is coded as 0/1, averaging it directly produces the proportion passing — a small trick worth remembering, since it means you often don’t need a separate percentage calculation for any binary (0/1) indicator column, which describes a lot of the Static File’s columns (Charter, EL, SPED, ChronicAbsent, and others).",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Group, Summarize, and the Percentage-by-Group Pattern</span>"
+    ]
+  },
+  {
+    "objectID": "08-group-summarize.html#grouping-by-more-than-one-field",
+    "href": "08-group-summarize.html#grouping-by-more-than-one-field",
+    "title": "8  Group, Summarize, and the Percentage-by-Group Pattern",
+    "section": "8.2 Grouping by more than one field",
+    "text": "8.2 Grouping by more than one field\n\nstatic_file |&gt;\n  group_by(DistrictName, Subject) |&gt;\n  summarize(avg_scale_score = mean(ScaleScore, na.rm = TRUE), .groups = \"drop\")\n\n.groups = \"drop\" is worth including out of habit — without it, summarize() leaves the result still grouped by all but the last grouping variable, which can cause confusing behavior in whatever you do next. Explicitly dropping the grouping keeps your next step working on a clean, ungrouped result.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Group, Summarize, and the Percentage-by-Group Pattern</span>"
+    ]
+  },
+  {
+    "objectID": "08-group-summarize.html#the-mutate-group_by-summarize-ungroup-pattern",
+    "href": "08-group-summarize.html#the-mutate-group_by-summarize-ungroup-pattern",
+    "title": "8  Group, Summarize, and the Percentage-by-Group Pattern",
+    "section": "8.3 The mutate → group_by → summarize → ungroup pattern",
+    "text": "8.3 The mutate → group_by → summarize → ungroup pattern\nThis is the single most useful combination move in this entire book, and it comes up constantly in accountability work: calculating what percentage of the total each group represents.\nWalking through it step by step, using EL status as the example — what percentage of all assessed students in each school are EL students?\n\nstatic_file |&gt;\n  filter(!is.na(Performance)) |&gt;                         # only assessed students\n  mutate(is_one = 1) |&gt;                                    # step 1: a column of 1s, one per record\n  group_by(SchoolName) |&gt;                                  # step 2: set up groups\n  summarize(\n    school_total = sum(is_one),                            # step 3: total records per school\n    el_total     = sum(EL)                                 # and EL records per school, in the same step\n  ) |&gt;\n  ungroup() |&gt;                                              # step 4: release the grouping\n  mutate(pct_el = el_total / school_total)                  # step 5: divide to get a percentage\n\nWhy each step earns its place:\n\nmutate(is_one = 1) gives you something reliable to sum() as a row counter. In this particular case n() inside summarize() would do the same job more directly — but this pattern matters once you want two different kinds of totals out of the same grouped calculation (as shown above, getting both school_total and el_total in one pass), which n() alone can’t do.\ngroup_by(SchoolName) sets up the grouping — same as before.\nsummarize() collapses each group down to one row, computing both totals you need simultaneously.\nungroup() is the step it’s easy to forget. After a summarize(), your result frame is still technically grouped (try running the chunk above without it, then run mutate() afterward separately — you’ll get the right answer here, but in more complex cases a lingering group can silently produce a percentage calculated within a group you no longer intend). Ungrouping first is the safe habit.\nmutate(pct_el = el_total / school_total) is the actual division — now safely happening across the whole ungrouped result, not row-by-row-within-group.\n\nOnce you’re comfortable with this five-step shape, you’ll find yourself reusing it for almost any “percent of total within a group” question — percent proficient, percent chronically absent, percent SPED, percent passing by subgroup. The columns change; the pattern doesn’t.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Group, Summarize, and the Percentage-by-Group Pattern</span>"
+    ]
+  },
+  {
+    "objectID": "08-group-summarize.html#a-shortcut-for-the-simplest-version",
+    "href": "08-group-summarize.html#a-shortcut-for-the-simplest-version",
+    "title": "8  Group, Summarize, and the Percentage-by-Group Pattern",
+    "section": "8.4 A shortcut for the simplest version",
+    "text": "8.4 A shortcut for the simplest version\nIf you only need one straightforward percentage and don’t need multiple custom totals in the same step, you can skip the mutate(is_one = 1) setup and lean on n() and mean() directly, as shown at the top of this chapter — that’s usually the right call for a quick one-off. Reach for the fuller five-step pattern above when you need more than one total out of the same grouped pass, or when the percentage isn’t a simple 0/1 average.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Group, Summarize, and the Percentage-by-Group Pattern</span>"
+    ]
+  },
+  {
+    "objectID": "09-reshaping.html",
+    "href": "09-reshaping.html",
+    "title": "9  Reshaping",
+    "section": "",
+    "text": "9.1 The problem reshaping solves\nThis is the one core skill in this book with no clean single-click Excel equivalent — which is exactly why it’s worth learning. It solves problems that are genuinely painful to do by hand, and it shows up constantly once you start preparing data for charts or multi-subject comparisons.\nThe Static File has one row per student per subject-and-record-type combination, with a single Subject column (ELA, Math, Sci) and a single Performance column holding that subject’s result. If you wanted to compare a student’s ELA performance side-by-side with their Math performance — one row per student, one column per subject — the data isn’t currently shaped that way. Reshaping is how you get there.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Reshaping</span>"
+    ]
+  },
+  {
+    "objectID": "09-reshaping.html#wide-to-long-pivot_longer",
+    "href": "09-reshaping.html#wide-to-long-pivot_longer",
+    "title": "9  Reshaping",
+    "section": "9.2 Wide to long: pivot_longer()",
+    "text": "9.2 Wide to long: pivot_longer()\n“Long” format is what most of dplyr and ggplot2 expect — generally, more rows, fewer columns, with one column identifying what’s being measured and another holding the value. Our Static File is already mostly long-shaped with respect to Subject/Performance — but to demonstrate the mechanics clearly, imagine you’d instead been handed a wider file with separate columns per subject:\n\n# Imagine a wide-format school summary like this:\n# SchoolName | ela_avg | math_avg | sci_avg\n\nwide_example &lt;- static_file |&gt;\n  group_by(SchoolName) |&gt;\n  summarize(\n    ela_avg  = mean(ScaleScore[Subject == \"ELA\"], na.rm = TRUE),\n    math_avg = mean(ScaleScore[Subject == \"Math\"], na.rm = TRUE),\n    sci_avg  = mean(ScaleScore[Subject == \"Sci\"], na.rm = TRUE),\n    .groups = \"drop\"\n  )\n\nwide_example\n\nNow reshape that wide summary into long format — one row per school per subject, rather than one row per school with three separate subject columns:\n\nlong_example &lt;- wide_example |&gt;\n  pivot_longer(\n    cols = c(ela_avg, math_avg, sci_avg),\n    names_to = \"subject\",\n    values_to = \"avg_scale_score\"\n  )\n\nlong_example\n\nThis is the shape you’d want for a ggplot2 chart comparing average scale scores by subject and school (covered in Visualization) — long format is what lets you map a single “subject” column to color or facet, rather than writing three separate geom_*() calls, one per wide column.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Reshaping</span>"
+    ]
+  },
+  {
+    "objectID": "09-reshaping.html#long-to-wide-pivot_wider-the-reverse",
+    "href": "09-reshaping.html#long-to-wide-pivot_wider-the-reverse",
+    "title": "9  Reshaping",
+    "section": "9.3 Long to wide: pivot_wider() — the reverse",
+    "text": "9.3 Long to wide: pivot_wider() — the reverse\nSometimes you want the opposite — collapsing long data back into a wide, side-by-side comparison table, which is often exactly what you want for a final report table a human will read:\n\nlong_example |&gt;\n  pivot_wider(names_from = subject, values_from = avg_scale_score)\n\nThis returns you to the original wide shape — useful as a final reporting step even if your analysis happened in long format along the way.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Reshaping</span>"
+    ]
+  },
+  {
+    "objectID": "09-reshaping.html#a-more-direct-example-using-the-static-file-as-is",
+    "href": "09-reshaping.html#a-more-direct-example-using-the-static-file-as-is",
+    "title": "9  Reshaping",
+    "section": "9.4 A more direct example using the Static File as-is",
+    "text": "9.4 A more direct example using the Static File as-is\nSince Subject and Performance are already separate columns in long form, here’s a reshape you could realistically run directly: turning a count of students by performance level into a side-by-side comparison table across subjects.\n\nstatic_file |&gt;\n  filter(!is.na(Performance)) |&gt;\n  count(Subject, Performance) |&gt;\n  pivot_wider(names_from = Subject, values_from = n, values_fill = 0)\n\nvalues_fill = 0 is worth knowing about — if some Subject/Performance combination has zero students, pivot_wider() would otherwise leave that cell as NA. Setting values_fill = 0 tells it to use an actual zero instead, which is almost always what you want for a count table.\nThe general rule of thumb: reach for pivot_longer() when you’re heading toward a chart or further group_by() analysis, and pivot_wider() when you’re heading toward a final, human-readable comparison table.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Reshaping</span>"
+    ]
+  },
+  {
+    "objectID": "10-importing-everywhere.html",
+    "href": "10-importing-everywhere.html",
+    "title": "10  Importing From Everywhere",
+    "section": "",
+    "text": "10.1 From a single Excel file\nYou’ve already imported one CSV. This chapter covers the rest of the places accountability data actually lives — Excel workbooks with multiple tabs, Google Sheets, and the brute-force-to-elegant progression that’s worth understanding in that order.\nlibrary(readxl)\n\ndf &lt;- read_excel(\"AF_Results_2026.xlsx\")                    # first sheet by default\ndf &lt;- read_excel(\"AF_Results_2026.xlsx\", sheet = \"Schools\")  # by sheet name\ndf &lt;- read_excel(\"AF_Results_2026.xlsx\", sheet = 2)          # by sheet position\ndf &lt;- read_excel(\"AF_Results_2026.xlsx\", range = \"A1:H500\")  # specific range, like a named range\n\nexcel_sheets(\"AF_Results_2026.xlsx\")  # list every sheet name without opening the file\nTip: read_excel() guesses each column’s type by sampling rows. A numeric ID column with leading zeros, or one with occasional blanks, sometimes gets misread as text. Force types explicitly when that happens:\ndf &lt;- read_excel(\"AF_Results_2026.xlsx\", col_types = c(\"text\", \"numeric\", \"date\"))",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Importing From Everywhere</span>"
+    ]
+  },
+  {
+    "objectID": "10-importing-everywhere.html#combining-multiple-tabs-the-brute-force-way-first",
+    "href": "10-importing-everywhere.html#combining-multiple-tabs-the-brute-force-way-first",
+    "title": "10  Importing From Everywhere",
+    "section": "10.2 Combining multiple tabs — the brute-force way first",
+    "text": "10.2 Combining multiple tabs — the brute-force way first\nAccountability files very often arrive as one workbook with a separate tab per year or per assessment window — exactly the situation bind_rows() solves. It’s worth learning the obvious, slightly repetitive way first, so you understand exactly what’s happening before reaching for the shortcut:\n\nyear_2023 &lt;- read_excel(\"AF_Results_Multi_Year.xlsx\", sheet = \"2023\")\nyear_2024 &lt;- read_excel(\"AF_Results_Multi_Year.xlsx\", sheet = \"2024\")\nyear_2025 &lt;- read_excel(\"AF_Results_Multi_Year.xlsx\", sheet = \"2025\")\n\ncombined &lt;- bind_rows(year_2023, year_2024, year_2025)\n\nbind_rows() stacks data frames on top of each other — same idea as copy-pasting one tab’s data underneath another’s, except it also handles columns that don’t perfectly line up between sheets (filling in NA where a column is missing from one of them) and keeps a record of exactly what happened, rather than a manual paste you’d have to redo by hand next year.\nThis approach works completely fine for three tabs. It gets tedious and error-prone at ten.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Importing From Everywhere</span>"
+    ]
+  },
+  {
+    "objectID": "10-importing-everywhere.html#the-same-task-the-elegant-way",
+    "href": "10-importing-everywhere.html#the-same-task-the-elegant-way",
+    "title": "10  Importing From Everywhere",
+    "section": "10.3 The same task, the elegant way",
+    "text": "10.3 The same task, the elegant way\nOnce you have more tabs than you want to type out by hand, combine reading and binding into one motion using lapply() and map_dfr():\n\nsheet_names &lt;- excel_sheets(\"AF_Results_Multi_Year.xlsx\")\n\nlist_of_dfs &lt;- lapply(sheet_names, function(s) {\n  read_excel(\"AF_Results_Multi_Year.xlsx\", sheet = s)\n})\n\ncombined &lt;- map_dfr(list_of_dfs, identity)\n\nWalking through what’s actually happening:\n\nexcel_sheets() grabs every sheet name in the file automatically — you’re no longer typing tab names by hand, so this scales to any number of tabs without more code.\nlapply() (“list apply”) runs the same function — here, read_excel() for a given sheet — once per item in sheet_names, and collects every result into a single list. This is the list data structure from Fundamental Concepts doing real work: a list of several data frames, one per sheet.\nmap_dfr() (“map, data-frame row-bind”) takes that list and stacks every data frame inside it into one combined data frame — functionally the same outcome as the manual bind_rows() above, but it works identically whether your list has 3 sheets or 30.\n\nA more compact, commonly-seen version of the same idea, often written directly with map_dfr() alone:\n\ncombined &lt;- sheet_names |&gt;\n  map_dfr(~ read_excel(\"AF_Results_Multi_Year.xlsx\", sheet = .x))\n\nThe ~ and .x here are purrr package shorthand for “for each sheet name, run read_excel() with this sheet” — don’t worry about memorizing the exact syntax yet; recognizing the pattern (read every sheet, bind them all) is more important than the shorthand at this stage.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Importing From Everywhere</span>"
+    ]
+  },
+  {
+    "objectID": "10-importing-everywhere.html#from-csv-or-other-flat-files",
+    "href": "10-importing-everywhere.html#from-csv-or-other-flat-files",
+    "title": "10  Importing From Everywhere",
+    "section": "10.4 From CSV or other flat files",
+    "text": "10.4 From CSV or other flat files\n\nlibrary(readr)\n\ndf &lt;- read_csv(\"enrollment.csv\")          # comma-separated\ndf &lt;- read_delim(\"data.txt\", delim = \"|\") # pipe-delimited, tab, or any other separator",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Importing From Everywhere</span>"
+    ]
+  },
+  {
+    "objectID": "10-importing-everywhere.html#from-google-sheets",
+    "href": "10-importing-everywhere.html#from-google-sheets",
+    "title": "10  Importing From Everywhere",
+    "section": "10.5 From Google Sheets",
+    "text": "10.5 From Google Sheets\n\nlibrary(googlesheets4)\n\ngs4_auth()  # one-time interactive browser login; caches credentials after that\n\ndf &lt;- read_sheet(\"https://docs.google.com/spreadsheets/d/your-sheet-id-here\")\ndf &lt;- read_sheet(\"your-sheet-id-here\", sheet = \"Raw Data\")\n\nA wrinkle worth knowing about in advance: gs4_auth() is designed for an interactive session — it expects to be able to pop open a browser window and wait for you to click through a login. That breaks the moment you try to render a Quarto document non-interactively (for example, an automated nightly report), since there’s no human present to click anything.\nThe fix is to authorize non-interactively, using a cached token instead of a live browser prompt:\n\noptions(gargle_oauth_cache = \".secrets\")   # set a fixed location for the cached token, once\ngs4_auth()                                  # run this once, interactively, to create the cached token\n\n# In your rendered/automated script, going forward:\ngs4_auth(cache = \".secrets\", email = \"your_service_account_or_email@example.gov\")\n\nIn practice: authenticate once interactively to create the cached token, then point any automated or rendered script at that same cache going forward rather than calling the interactive flow again. For genuinely unattended automation (a scheduled job with no human involved at all), a Google service account is the more robust long-term answer, authenticated via gs4_auth(path = \"service-account-key.json\") — worth investigating once your Google Sheets workflow moves from occasional manual renders to a real recurring automation.\nThe next chapter covers the remaining major source you’ll encounter in accountability work — databases — along with the credential-security practices that matter once real login information is involved.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Importing From Everywhere</span>"
+    ]
+  },
+  {
+    "objectID": "11-database-connections.html",
+    "href": "11-database-connections.html",
+    "title": "11  Database Connections",
+    "section": "",
+    "text": "11.1 A basic connection\nIf you already write SQL in Access, SSMS, or anywhere else, this chapter is the smallest jump in the entire book — your query logic doesn’t change at all. What changes is how you establish the connection from R, and — just as important — how you do that safely.\nlibrary(DBI)\nlibrary(odbc)\n\ncon &lt;- dbConnect(odbc::odbc(), \"Your_DSN_Name\")   # DSN set up via ODBC Data Source Administrator\n\ndf &lt;- dbGetQuery(con, \"SELECT * FROM dbo.enrollment WHERE school_year = 2026\")\n\ndbDisconnect(con)  # close the connection when you're done\nIf you don’t already have a DSN (Data Source Name) configured, you can instead supply full connection details directly:\ncon &lt;- dbConnect(odbc::odbc(),\n                  Driver   = \"SQL Server\",\n                  Server   = \"your-server.domain.gov\",\n                  Database = \"Accountability\",\n                  UID      = \"your_username\",\n                  PWD      = \"your_password\")",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Database Connections</span>"
+    ]
+  },
+  {
+    "objectID": "11-database-connections.html#stop-that-last-example-has-a-real-problem",
+    "href": "11-database-connections.html#stop-that-last-example-has-a-real-problem",
+    "title": "11  Database Connections",
+    "section": "11.2 Stop — that last example has a real problem",
+    "text": "11.2 Stop — that last example has a real problem\nLook at that connection again. The password is sitting in plain text, directly in a script. If that script ever gets committed to version control, emailed to a colleague, or simply left open on a shared screen, that credential is exposed. Never type database credentials directly into a script — this is a real, common mistake, not a theoretical one, and it’s worth fixing before it becomes a habit.\nA few better options, roughly in order of preference:\n\n11.2.1 Option 1: Windows / AD credentials (ideal where available)\nIf your organization’s database supports trusted authentication tied to your existing Windows login, you can skip passwords entirely:\n\ncon &lt;- dbConnect(odbc::odbc(),\n                  Driver   = \"SQL Server\",\n                  Server   = \"your-server.domain.gov\",\n                  Database = \"Accountability\",\n                  Trusted_Connection = \"Yes\")\n\nNo username or password anywhere in the script — your existing AD login does the work. This is the cleanest option when your environment supports it.\n\n\n11.2.2 Option 2: The keyring package (strong option on Mac, and works on Windows too)\nThe keyring package stores credentials securely in your operating system’s native credential manager — Mac’s Keychain, or Windows Credential Manager — rather than in any file you write:\n\nlibrary(keyring)\n\n# One-time setup: store the credential securely (prompts you interactively, doesn't appear in your script)\nkey_set(\"ade_database_password\", username = \"your_username\")\n\n# In your actual script, going forward — retrieves the password without ever displaying or storing it in code\ncon &lt;- dbConnect(odbc::odbc(),\n                  Driver   = \"SQL Server\",\n                  Server   = \"your-server.domain.gov\",\n                  Database = \"Accountability\",\n                  UID      = \"your_username\",\n                  PWD      = key_get(\"ade_database_password\", username = \"your_username\"))\n\nOn Mac, keyring integrates with the native Keychain and the Ticket Viewer app directly, which makes setup straightforward. On Windows, keyring also works, backed by Windows Credential Manager — the package is cross-platform, so the same key_set() / key_get() pattern applies on both systems without you needing to learn a separate workflow per OS.\n\n\n11.2.3 Option 3: A config file outside your project, never committed to version control\nAt minimum, if neither of the above is available in your environment, reference a separate config file stored somewhere secure — outside your project folder, and explicitly excluded from version control (a .gitignore entry) so it never accidentally gets shared:\n\n# config.yml, sitting in a secure location OUTSIDE your project folder — never inside it\n# database:\n#   server: your-server.domain.gov\n#   uid: your_username\n#   pwd: your_password\n\nlibrary(config)\ndb_config &lt;- config::get(file = \"/secure/location/config.yml\", config = \"database\")\n\ncon &lt;- dbConnect(odbc::odbc(),\n                  Driver   = \"SQL Server\",\n                  Server   = db_config$server,\n                  UID      = db_config$uid,\n                  PWD      = db_config$pwd)\n\nThis is meaningfully better than hardcoding, but still weaker than Options 1 or 2 — a config file is still a file that could be misplaced or copied. Treat it as a fallback, not a first choice.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Database Connections</span>"
+    ]
+  },
+  {
+    "objectID": "11-database-connections.html#duckdb-and-parquet-a-lighter-weight-alternative-worth-knowing-about",
+    "href": "11-database-connections.html#duckdb-and-parquet-a-lighter-weight-alternative-worth-knowing-about",
+    "title": "11  Database Connections",
+    "section": "11.3 DuckDB and Parquet — a lighter-weight alternative worth knowing about",
+    "text": "11.3 DuckDB and Parquet — a lighter-weight alternative worth knowing about\nNot every situation calls for a full database connection. For working with large local files efficiently — without needing a server, a DSN, or any credentials at all — DuckDB and the Parquet file format are increasingly common in the modern R (and Python) data ecosystem, and are part of the broader Posit/polyglot convergence mentioned back in Why R First.\n\nlibrary(duckdb)\nlibrary(DBI)\n\ncon &lt;- dbConnect(duckdb())\n\n# Query a Parquet file directly, without even loading it fully into memory first\nresult &lt;- dbGetQuery(con, \"SELECT * FROM 'static_file_sample.parquet' WHERE Subject = 'ELA'\")\n\ndbDisconnect(con)\n\nIf you already know SQL, this can make the transition to R noticeably easier — you keep writing the query logic you already know, while gaining R’s data-wrangling and visualization tools around it. Parquet files are also typically far smaller and faster to read than an equivalent CSV (worth knowing if you ever find yourself working with a Static File at full statewide scale, rather than the sample used in this book), and CSV remains a perfectly fine fallback wherever Parquet isn’t already in use.\nThe next chapter moves from getting data in to one of the most valuable things you can do once it’s there — visualization.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Database Connections</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html",
+    "href": "12-visualization.html",
+    "title": "12  Visualization",
+    "section": "",
+    "text": "12.1 The grammar of graphics, in plain terms\nExcel’s Chart Wizard asks you one question up front: what type of chart do you want? ggplot2 — the charting package you’ll use throughout this chapter — asks a different question first: what does each variable in your data mean in the picture you’re about to build? This way of thinking is called the grammar of graphics, and once it clicks, it tends to make charting in R feel less like memorizing chart types and more like describing what you already understand about your data.\nTwo pieces of vocabulary worth having before the first example:",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#the-grammar-of-graphics-in-plain-terms",
+    "href": "12-visualization.html#the-grammar-of-graphics-in-plain-terms",
+    "title": "12  Visualization",
+    "section": "",
+    "text": "Aesthetics (aes()) — which columns map to which visual properties. Does ScaleScore control position on the x-axis? Does Subject control color? You’re deciding what each variable’s job is in the picture, before deciding how anything gets drawn.\nLayers — think of a chart as a stack of transparent sheets, each one adding something: one layer draws points, another adds a trend line, another adds labels. You build a chart by stacking layers with +, and you can add, remove, or reorder them independently.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#the-basic-pattern",
+    "href": "12-visualization.html#the-basic-pattern",
+    "title": "12  Visualization",
+    "section": "12.2 The basic pattern",
+    "text": "12.2 The basic pattern\n\nlibrary(ggplot2)\n\nggplot(data = static_file, aes(x = ScaleScore, y = SGP_CCR)) +\n  geom_point()\n\nRead this as a sentence: “Using static_file, map ScaleScore to the x-axis and SGP_CCR to the y-axis, then draw points.” aes() set up the meaning; geom_point() is the layer that actually draws something using that meaning.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#common-chart-types-same-data-different-geom",
+    "href": "12-visualization.html#common-chart-types-same-data-different-geom",
+    "title": "12  Visualization",
+    "section": "12.3 Common chart types — same data, different geom",
+    "text": "12.3 Common chart types — same data, different geom\nThe aesthetics often barely change between chart types — usually, only the geom_*() layer does:\n\nstatic_file |&gt;\n  filter(!is.na(Performance)) |&gt;\n  count(Subject, Performance) |&gt;\n  ggplot(aes(x = factor(Performance), y = n, fill = Subject)) +\n  geom_col(position = \"dodge\")             # bar chart\n\nggplot(static_file, aes(x = ScaleScore)) +\n  geom_histogram()                          # histogram\n\nggplot(static_file, aes(x = factor(StudentGrade), y = ScaleScore)) +\n  geom_boxplot()                            # boxplot, score distribution by grade",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#adding-color-labels-and-a-cleaner-look",
+    "href": "12-visualization.html#adding-color-labels-and-a-cleaner-look",
+    "title": "12  Visualization",
+    "section": "12.4 Adding color, labels, and a cleaner look",
+    "text": "12.4 Adding color, labels, and a cleaner look\n\nstatic_file |&gt;\n  filter(!is.na(Performance), Subject == \"ELA\") |&gt;\n  ggplot(aes(x = ScaleScore, fill = factor(Performance))) +\n  geom_histogram(alpha = 0.8) +\n  labs(\n    title = \"ELA Scale Score Distribution by Performance Level\",\n    x = \"Scale Score\",\n    y = \"Number of Students\",\n    fill = \"Performance Level\"\n  ) +\n  theme_minimal()\n\nlabs() is where your titles and axis labels live; theme_minimal() is one of several built-in themes that strip away Excel’s default gray gridline clutter. theme_bw(), theme_classic(), and others are worth trying — swapping a theme is a one-word change, not a re-build.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#faceting-one-chart-per-group-automatically",
+    "href": "12-visualization.html#faceting-one-chart-per-group-automatically",
+    "title": "12  Visualization",
+    "section": "12.5 Faceting — one chart per group, automatically",
+    "text": "12.5 Faceting — one chart per group, automatically\n\nstatic_file |&gt;\n  filter(!is.na(ScaleScore)) |&gt;\n  ggplot(aes(x = ScaleScore)) +\n  geom_histogram() +\n  facet_wrap(~ Subject)\n\nThis single line replaces manually building and formatting a separate chart per subject — facet_wrap() does it in one pass, with consistent formatting guaranteed across every panel.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#making-it-interactive-plotlyggplotly",
+    "href": "12-visualization.html#making-it-interactive-plotlyggplotly",
+    "title": "12  Visualization",
+    "section": "12.6 Making it interactive: plotly::ggplotly()",
+    "text": "12.6 Making it interactive: plotly::ggplotly()\nEverything above produces a static image. Wrapping a finished ggplot2 chart in ggplotly() turns it interactive — hover tooltips, zoom, and pan — with no rebuilding required:\n\nlibrary(plotly)\n\np &lt;- static_file |&gt;\n  filter(!is.na(Performance)) |&gt;\n  ggplot(aes(x = factor(Performance), fill = Subject)) +\n  geom_bar(position = \"dodge\") +\n  labs(title = \"Student Counts by Performance Level and Subject\")\n\nggplotly(p)\n\nThis is particularly effective inside a Quarto HTML document or presentation (see Project Walkthrough 2) — a static chart in a PDF becomes something a viewer can actually explore.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#tables-gt-for-polished-static-tables",
+    "href": "12-visualization.html#tables-gt-for-polished-static-tables",
+    "title": "12  Visualization",
+    "section": "12.7 Tables: gt for polished static tables",
+    "text": "12.7 Tables: gt for polished static tables\nThe gt package (“grammar of tables,” deliberately named to echo ggplot2’s philosophy) turns a summarized data frame into a publication-quality formatted table:\n\nlibrary(gt)\n\nstatic_file |&gt;\n  group_by(SchoolName) |&gt;\n  summarize(n_students = n(), avg_scale_score = mean(ScaleScore, na.rm = TRUE), .groups = \"drop\") |&gt;\n  arrange(desc(avg_scale_score)) |&gt;\n  head(10) |&gt;\n  gt() |&gt;\n  tab_header(title = \"Top 10 Schools by Average Scale Score\") |&gt;\n  fmt_number(columns = avg_scale_score, decimals = 1)\n\nThis is the kind of table you’d put directly into a report someone is reading top to bottom — formatted, titled, and ready to present, rather than a raw printed data frame.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#tables-dt-for-interactive-explorable-tables",
+    "href": "12-visualization.html#tables-dt-for-interactive-explorable-tables",
+    "title": "12  Visualization",
+    "section": "12.8 Tables: DT for interactive, explorable tables",
+    "text": "12.8 Tables: DT for interactive, explorable tables\nWhen the audience needs to search, sort, filter, or export the data themselves — rather than just read a fixed top-10 list — the DT package builds an interactive table widget, well suited to an HTML Quarto document:\n\nlibrary(DT)\n\nstatic_file |&gt;\n  select(SchoolName, DistrictName, Subject, Performance, ScaleScore) |&gt;\n  datatable(\n    filter = \"top\",                 # column-level filter boxes\n    extensions = \"Buttons\",\n    options = list(\n      scrollY = \"400px\",            # scroll instead of paginating\n      paging = FALSE,\n      dom = \"Bfrtip\",\n      buttons = c(\"csv\")            # a CSV download button, built in\n    )\n  )\n\nA reader can filter to one school, sort by scale score, or export exactly the slice they care about — all without you building separate views for them. This is the table format you’ll use in Project Walkthrough 2.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "12-visualization.html#inline-values-tying-it-back-to-quarto",
+    "href": "12-visualization.html#inline-values-tying-it-back-to-quarto",
+    "title": "12  Visualization",
+    "section": "12.9 Inline values, tying it back to Quarto",
+    "text": "12.9 Inline values, tying it back to Quarto\nAs covered in Quarto Essentials, any of the values you calculate in this chapter can be dropped directly into a sentence of prose using inline code:\n\n# The average ELA scale score across all schools in this sample is `r round(mean(static_file$ScaleScore[static_file$Subject == \"ELA\"], na.rm = TRUE), 1)`.\n\nCombined with a gt table and a ggplotly() chart, this is the core toolkit behind both project walkthroughs that close out this book — starting with the next chapter.",
+    "crumbs": [
+      "Core Data Skills",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html",
+    "href": "13-project-1-automation.html",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "",
+    "text": "13.1 The goal, end to end\nThis is the first of two end-to-end projects that pull together everything in this book so far. The scenario: you receive an Excel workbook with one tab per year of assessment data, and you need a clean, tidy, combined dataset — plus a validation file confirming the import looks right — produced automatically every time, rather than rebuilt by hand each cycle.\nThis belongs in a plain .R script rather than a .qmd document, since the goal is unattended automation, not a narrated report (see the file-type distinction in Initial Setup).",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html#the-goal-end-to-end",
+    "href": "13-project-1-automation.html#the-goal-end-to-end",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "",
+    "text": "Read every tab from a multi-year Excel workbook\nCombine them into one tidy data frame\nReshape into long format for easier downstream analysis\nProduce summary statistics as a validation check\nWrite both the tidy data and the validation summary to separate output folders",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html#step-1-read-every-tab",
+    "href": "13-project-1-automation.html#step-1-read-every-tab",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "13.2 Step 1: Read every tab",
+    "text": "13.2 Step 1: Read every tab\n\nlibrary(tidyverse)\nlibrary(readxl)\nlibrary(janitor)\n\nfile_path &lt;- \"data/multi_year_assessment_results.xlsx\"\n\nsheet_names &lt;- excel_sheets(file_path)\n\nraw_list &lt;- sheet_names |&gt;\n  map_dfr(~ read_excel(file_path, sheet = .x) |&gt; mutate(source_sheet = .x))\n\nNotice the addition of mutate(source_sheet = .x) inside the map step — tagging every row with which tab it came from before combining. This is cheap insurance: if anything looks wrong later, you can immediately trace a record back to its source tab rather than guessing.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html#step-2-clean-and-combine",
+    "href": "13-project-1-automation.html#step-2-clean-and-combine",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "13.3 Step 2: Clean and combine",
+    "text": "13.3 Step 2: Clean and combine\n\ntidy_data &lt;- raw_list |&gt;\n  clean_names() |&gt;\n  filter(!is.na(scale_score))   # drop non-assessed records for this particular analysis",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html#step-3-reshape-to-long-format",
+    "href": "13-project-1-automation.html#step-3-reshape-to-long-format",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "13.4 Step 3: Reshape to long format",
+    "text": "13.4 Step 3: Reshape to long format\nSuppose each year’s tab had separate columns per subject (ela_score, math_score, sci_score) — a common real-world shape for a multi-year export. Reshape into one row per student per subject:\n\ntidy_long &lt;- tidy_data |&gt;\n  pivot_longer(\n    cols = ends_with(\"_score\"),\n    names_to = \"subject\",\n    names_pattern = \"(.*)_score\",\n    values_to = \"scale_score\"\n  )\n\nnames_pattern here extracts just the subject portion of each column name (ela, math, sci) rather than keeping the full _score suffix — a small refinement on the basic pivot_longer() pattern from Reshaping.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html#step-4-build-a-validation-summary",
+    "href": "13-project-1-automation.html#step-4-build-a-validation-summary",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "13.5 Step 4: Build a validation summary",
+    "text": "13.5 Step 4: Build a validation summary\nBefore trusting any pipeline’s output, generate counts and summary statistics you can quickly eyeball against what you’d expect:\n\nvalidation_summary &lt;- tidy_long |&gt;\n  group_by(source_sheet, subject) |&gt;\n  summarize(\n    n_records      = n(),\n    n_missing      = sum(is.na(scale_score)),\n    avg_scale_score = mean(scale_score, na.rm = TRUE),\n    min_score      = min(scale_score, na.rm = TRUE),\n    max_score      = max(scale_score, na.rm = TRUE),\n    .groups = \"drop\"\n  )\n\nThis is the kind of table you’d glance at every time the pipeline runs — a sudden jump in n_missing, or an avg_scale_score outside the range you expect, is often the first sign something upstream changed before you’d otherwise notice.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html#step-5-write-outputs-to-separate-subfolders",
+    "href": "13-project-1-automation.html#step-5-write-outputs-to-separate-subfolders",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "13.6 Step 5: Write outputs to separate subfolders",
+    "text": "13.6 Step 5: Write outputs to separate subfolders\n\ndir.create(\"output/tidy\", recursive = TRUE, showWarnings = FALSE)\ndir.create(\"output/validation\", recursive = TRUE, showWarnings = FALSE)\n\nwrite_csv(tidy_long, \"output/tidy/assessment_results_tidy.csv\")\nwrite_csv(validation_summary, \"output/validation/validation_summary.csv\")\n\ndir.create(..., showWarnings = FALSE) quietly creates the folder if it doesn’t exist yet, and does nothing (without throwing an error) if it already does — useful for a script meant to run unattended and repeatedly.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "13-project-1-automation.html#why-this-is-worth-the-setup",
+    "href": "13-project-1-automation.html#why-this-is-worth-the-setup",
+    "title": "13  Project Walkthrough 1: Automating a Multi-Tab Import",
+    "section": "13.7 Why this is worth the setup",
+    "text": "13.7 Why this is worth the setup\nThe entire sequence above — reading, cleaning, reshaping, validating, and writing — is now a single script. Next year, when a new tab gets added to the source workbook, nothing about this script needs to change. excel_sheets() picks up the new tab automatically, map_dfr() combines it in automatically, and the validation summary will include it without you touching a single line. This is the compounding-returns argument for scripted work in its purest form: the investment happened once, here, and every future run is free.\nThe next chapter builds the second kind of deliverable — not an automated pipeline, but an interactive Quarto presentation meant for a human audience to actually read and explore.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Project Walkthrough 1: Automating a Multi-Tab Import</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html",
+    "href": "14-project-2-quarto-presentation.html",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "",
+    "text": "14.1 Setting up a new Quarto document\nThe first project produced a clean, validated dataset behind the scenes. This one builds something a human being will actually open and read: an interactive Quarto presentation summarizing results, suitable for sharing with a principal, a board, or your own team.\nStart with a new .qmd file (see Quarto Essentials for the mechanics), with a YAML header set up for revealjs slides and self-contained sharing:\nembed-resources: true matters here specifically because this file is meant to be shared — a single self-contained .html that opens correctly on anyone’s machine, with no separate image folder that could go missing. echo: false at the document level means code won’t show by default in any chunk unless you explicitly override it per-chunk — appropriate for a presentation meant for an audience, as opposed to the code-forward reference chapters earlier in this book.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html#setting-up-a-new-quarto-document",
+    "href": "14-project-2-quarto-presentation.html#setting-up-a-new-quarto-document",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "",
+    "text": "---\ntitle: \"School Performance Summary\"\nsubtitle: \"Static File Sample — Current Year\"\nformat:\n  revealjs:\n    embed-resources: true\n    controls: true\nexecute:\n  echo: false\n  warning: false\n  message: false\n---",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html#load-libraries-and-data-once-near-the-top",
+    "href": "14-project-2-quarto-presentation.html#load-libraries-and-data-once-near-the-top",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "14.2 Load libraries and data once, near the top",
+    "text": "14.2 Load libraries and data once, near the top\ninclude: false hides both the code and any output from this setup chunk — appropriate here since loading libraries and data isn’t something your audience needs to see, only something the rest of the document depends on.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html#a-slide-with-an-interactive-visualization",
+    "href": "14-project-2-quarto-presentation.html#a-slide-with-an-interactive-visualization",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "14.3 A slide with an interactive visualization",
+    "text": "14.3 A slide with an interactive visualization\n## Scale Score Distribution by Subject\n\n\n::: {.cell}\n\n```{.r .cell-code}\np &lt;- static_file |&gt;\n  filter(!is.na(ScaleScore)) |&gt;\n  ggplot(aes(x = ScaleScore, fill = Subject)) +\n  geom_histogram(alpha = 0.7, position = \"identity\") +\n  labs(x = \"Scale Score\", y = \"Number of Students\") +\n  theme_minimal()\n\nggplotly(p)\n```\n:::\n\nBecause this is wrapped in ggplotly() (from Visualization), anyone viewing the rendered slide can hover over bars for exact values, zoom into a score range, or toggle subjects on and off — interactivity a static image in a PDF simply can’t offer.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html#a-slide-with-an-interactive-table",
+    "href": "14-project-2-quarto-presentation.html#a-slide-with-an-interactive-table",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "14.4 A slide with an interactive table",
+    "text": "14.4 A slide with an interactive table\n## Explore the Data\n\n\n::: {.cell}\n\n```{.r .cell-code}\nstatic_file |&gt;\n  filter(!is.na(Performance)) |&gt;\n  select(SchoolName, DistrictName, Subject, Performance, ScaleScore) |&gt;\n  datatable(filter = \"top\", options = list(pageLength = 8))\n```\n:::\n\nThis single chunk hands your audience a live, searchable, filterable version of the underlying data, directly inside the presentation — rather than a static screenshot of a table they can’t interact with.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html#using-inline-variables-in-your-narrative",
+    "href": "14-project-2-quarto-presentation.html#using-inline-variables-in-your-narrative",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "14.5 Using inline variables in your narrative",
+    "text": "14.5 Using inline variables in your narrative\nThis is where Quarto’s literate-programming approach (text and code woven together, from Quarto Essentials) does real work in a presentation context. Rather than typing a number that will quietly go stale the next time this file is regenerated against updated data:\n{r} 1+1\nEvery number in that sentence is computed live from static_file at render time. Re-run this same document against next year’s data, and every figure updates correctly with zero manual editing — directly delivering on the reproducibility argument that’s been a throughline of this entire book.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html#previewing-and-sharing",
+    "href": "14-project-2-quarto-presentation.html#previewing-and-sharing",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "14.6 Previewing and sharing",
+    "text": "14.6 Previewing and sharing\nUse Preview (Ctrl/Cmd + Shift + K, from Quarto Essentials) while you build, to check slides as you go. When you’re ready to share:\n\nClick Preview (or run quarto render from the terminal) to produce the final self-contained .html file\nClick the pop-out button in the Viewer pane to open it in a full browser window, or simply double-click the rendered .html file from your file system — since embed-resources: true is set, it will open correctly anywhere, with no separate files required\nShare that single .html file directly — email, shared drive, or anywhere else — and it will render identically on the recipient’s end",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "14-project-2-quarto-presentation.html#what-youve-actually-built",
+    "href": "14-project-2-quarto-presentation.html#what-youve-actually-built",
+    "title": "14  Project Walkthrough 2: A Quarto Interactive Presentation",
+    "section": "14.7 What you’ve actually built",
+    "text": "14.7 What you’ve actually built\nA presentation that’s simultaneously a finished deliverable and a script — one that can be re-rendered against next year’s Static File with zero manual rework, that updates its own numbers automatically, and that gives your audience a genuinely interactive way to explore the underlying data rather than a static snapshot. This is, in miniature, the entire case for moving this kind of work into R: the investment is real, but it’s a one-time investment that pays out every single time you run it again.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Project Walkthrough 2: A Quarto Interactive Presentation</span>"
+    ]
+  },
+  {
+    "objectID": "15-where-to-go.html",
+    "href": "15-where-to-go.html",
+    "title": "15  Where to Go From Here",
+    "section": "",
+    "text": "15.1 A realistic next few weeks\nYou now have a working path from spreadsheets and SAS scripts to a real, reproducible R workflow — using data shaped like the work you actually do. A few honest closing notes, and where to turn when you’re past what this book covers.\nYou are not trying to become a software engineer. You’re trying to stop re-doing the same manual process every reporting cycle — and everything in this book was selected with that specific goal in mind.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Where to Go From Here</span>"
+    ]
+  },
+  {
+    "objectID": "15-where-to-go.html#a-realistic-next-few-weeks",
+    "href": "15-where-to-go.html#a-realistic-next-few-weeks",
+    "title": "15  Where to Go From Here",
+    "section": "",
+    "text": "Week 1: Re-run the chapters in Part 2 and the early part of Part 3 against a file from your own work, not just the Static File sample. Seeing your own data behave the way the book’s examples did is usually the moment this starts to feel real rather than theoretical.\nWeek 2: Pick one recurring task you currently do by hand — a pivot table you rebuild every reporting cycle, a VLOOKUP-heavy merge, a chart you reformat from scratch each time — and rebuild it once in R using this book’s recipes. Compare the output number-for-number against your existing process before trusting it.\nWeek 3 and beyond: Start saving your work as scripts or Quarto documents instead of redoing the same clicks next month. The first time you re-run something instead of repeating two hours of manual work is usually the moment the investment pays for itself.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Where to Go From Here</span>"
+    ]
+  },
+  {
+    "objectID": "15-where-to-go.html#where-to-look-when-youre-stuck",
+    "href": "15-where-to-go.html#where-to-look-when-youre-stuck",
+    "title": "15  Where to Go From Here",
+    "section": "15.2 Where to look when you’re stuck",
+    "text": "15.2 Where to look when you’re stuck\n\n?function_name in the R console pulls up that function’s documentation directly — e.g., ?left_join\nR for Data Science (free online, by Hadley Wickham & Garrett Grolemund) — the closest thing to a canonical tidyverse textbook: https://r4ds.hadley.nz\nPosit Cheatsheets — printable quick-reference cards for dplyr, ggplot2, and more: https://posit.co/resources/cheatsheets/\nStack Overflow / Google — searching “r how to [task]” is a completely normal and permanent part of the workflow, not a beginner habit you’ll outgrow\nThe SGP package documentation and community — given the shared-language argument from Why R First, this is genuinely worth bookmarking once you’re ready to go deeper into growth-model-specific R tooling",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Where to Go From Here</span>"
+    ]
+  },
+  {
+    "objectID": "15-where-to-go.html#a-note-on-what-this-book-didnt-cover",
+    "href": "15-where-to-go.html#a-note-on-what-this-book-didnt-cover",
+    "title": "15  Where to Go From Here",
+    "section": "15.3 A note on what this book didn’t cover",
+    "text": "15.3 A note on what this book didn’t cover\nThis book deliberately stayed narrow — a fast on-ramp, not a comprehensive data science curriculum. A few things worth knowing exist, even though they weren’t covered here: writing your own custom functions, R’s object-oriented programming patterns (relevant if you ever work directly in a larger inherited codebase), formal package development, and statistical modeling beyond simple summary statistics. None of those are necessary to be genuinely productive day to day — they’re worth exploring once the core workflow in this book feels comfortable, not before.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Where to Go From Here</span>"
+    ]
+  },
+  {
+    "objectID": "15-where-to-go.html#last-thing",
+    "href": "15-where-to-go.html#last-thing",
+    "title": "15  Where to Go From Here",
+    "section": "15.4 Last thing",
+    "text": "15.4 Last thing\nYou will look up basic syntax for months. Everyone who’s gone through this transition does — it is not a sign that you’re behind, and it never fully stops, even for experienced users. The goal was never to memorize everything in this book. It was to get you to the point where the first real script you write saves you real time — and from there, the rest tends to take care of itself.",
+    "crumbs": [
+      "Putting It Together",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Where to Go From Here</span>"
+    ]
+  },
+  {
+    "objectID": "appendix-clean-public-files.html",
+    "href": "appendix-clean-public-files.html",
+    "title": "Appendix: Practice Ideas — Working With Public Files",
+    "section": "",
+    "text": "Idea 1: Clean and standardize a state-published Excel report\nOnce the core chapters feel comfortable, the best way to solidify the skills in this book is practicing on real, publicly available education data rather than only the Static File sample. A few specific ideas, roughly ordered from most to least guided.\nMost state education agencies publish A–F results, report card data, or assessment summaries as multi-tab Excel workbooks intended for human reading — merged header cells, inconsistent column names across tabs, footnote rows mixed into the data, multiple title rows before the actual header. Download one publicly posted report from your own state’s website and put Common Functions and Importing From Everywhere to direct use:\nThis is the single most directly useful exercise, because it’s the exact category of messy, real-world file you’ll keep encountering professionally.",
+    "crumbs": [
+      "Appendix: Practice Ideas — Working With Public Files"
+    ]
+  },
+  {
+    "objectID": "appendix-clean-public-files.html#idea-1-clean-and-standardize-a-state-published-excel-report",
+    "href": "appendix-clean-public-files.html#idea-1-clean-and-standardize-a-state-published-excel-report",
+    "title": "Appendix: Practice Ideas — Working With Public Files",
+    "section": "",
+    "text": "Use read_excel(..., skip = n) to skip past title rows that aren’t real headers\nRun janitor::clean_names() immediately, and expect it to need a follow-up rename() pass for anything it can’t fully standardize on its own\nUse the brute-force bind_rows() approach from Importing From Everywhere across every tab, then revisit with map_dfr() once you understand what you’re combining\nProduce a short validation summary (row counts per tab, missing-value counts per column) as practice for the pattern from Project Walkthrough 1",
+    "crumbs": [
+      "Appendix: Practice Ideas — Working With Public Files"
+    ]
+  },
+  {
+    "objectID": "appendix-clean-public-files.html#idea-2-build-a-multi-year-trend-file-from-separately-published-annual-files",
+    "href": "appendix-clean-public-files.html#idea-2-build-a-multi-year-trend-file-from-separately-published-annual-files",
+    "title": "Appendix: Practice Ideas — Working With Public Files",
+    "section": "Idea 2: Build a multi-year trend file from separately published annual files",
+    "text": "Idea 2: Build a multi-year trend file from separately published annual files\nMany states publish one separate file per year rather than one combined multi-year file. Download three or four years of the same report (say, statewide proficiency rates by subject) and practice:\n\nReading each year’s file separately, tagging each with its year before combining (the same source_sheet-style tagging pattern from Project Walkthrough 1)\nUsing bind_rows() or map_dfr() to combine them into one long-format trend dataset\nBuilding a ggplot2 line chart (from Visualization) showing the trend over time, faceted by subject or school type\n\nThis is good practice specifically for the reshaping mindset in Reshaping — you’ll likely find that what looks like “the same report” each year occasionally has slightly different column names or structures year to year, which is itself a useful, realistic problem to solve.",
+    "crumbs": [
+      "Appendix: Practice Ideas — Working With Public Files"
+    ]
+  },
+  {
+    "objectID": "appendix-clean-public-files.html#idea-3-compare-your-own-states-public-file-structure-to-another-states",
+    "href": "appendix-clean-public-files.html#idea-3-compare-your-own-states-public-file-structure-to-another-states",
+    "title": "Appendix: Practice Ideas — Working With Public Files",
+    "section": "Idea 3: Compare your own state’s public file structure to another state’s",
+    "text": "Idea 3: Compare your own state’s public file structure to another state’s\nIf you work in one state’s accountability system, pulling a public assessment or accountability file from a different state is a good way to practice general-purpose cleaning instincts rather than ones already tailored to a file structure you know well. Look for:\n\nDifferent column naming conventions for conceptually similar fields (your Performance may be another state’s AchievementLevel)\nDifferent missing-data conventions (some states use blank cells, others use -1, N/A as literal text, or * for suppressed small-n cells)\n\nPractice writing a case_when() or rename() mapping that translates the unfamiliar file’s structure into something matching your own Static File’s conventions — a genuinely useful skill if your role ever involves cross-state comparisons or multi-state research.",
+    "crumbs": [
+      "Appendix: Practice Ideas — Working With Public Files"
+    ]
+  },
+  {
+    "objectID": "appendix-clean-public-files.html#idea-4-recreate-a-public-facing-dashboard-chart",
+    "href": "appendix-clean-public-files.html#idea-4-recreate-a-public-facing-dashboard-chart",
+    "title": "Appendix: Practice Ideas — Working With Public Files",
+    "section": "Idea 4: Recreate a public-facing dashboard chart",
+    "text": "Idea 4: Recreate a public-facing dashboard chart\nMost state report card or accountability websites have at least one public-facing chart or table (a proficiency-by-subgroup bar chart, a multi-year trend line, a school comparison table). Pick one, find or approximate the underlying public data, and try to recreate it using ggplot2 and gt from Visualization. This is good practice specifically because you have a known target to match — it’s much easier to tell whether your chart is “right” when you’re matching something that already exists, rather than building from scratch with no reference point.",
+    "crumbs": [
+      "Appendix: Practice Ideas — Working With Public Files"
+    ]
+  },
+  {
+    "objectID": "appendix-clean-public-files.html#a-general-note-on-all-of-these",
+    "href": "appendix-clean-public-files.html#a-general-note-on-all-of-these",
+    "title": "Appendix: Practice Ideas — Working With Public Files",
+    "section": "A general note on all of these",
+    "text": "A general note on all of these\nPublic education data files are excellent practice material precisely because they’re real and imperfect — inconsistent headers, surprise merged cells, footnote text mixed into data rows, and the occasional genuinely confusing column. That friction is exactly what this book intends to prepare you for. The Static File sample used throughout the rest of this book was deliberately realistic, but it was also clean enough to teach from without fighting the file itself on every example — these exercises are where you get the practice of fighting the file, which is a normal and permanent part of the job.",
+    "crumbs": [
+      "Appendix: Practice Ideas — Working With Public Files"
+    ]
+  }
+]

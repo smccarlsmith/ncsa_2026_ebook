@@ -1,0 +1,23 @@
+# Preface {.unnumbered}
+
+This book exists to get you productive in R quickly, using the kind of data you already work with every day. It's not a general-purpose "learn programming" course — it's written specifically for people who do district or state-level assessment and accountability work, currently in Excel, SAS, Access, or some mix of all three.
+
+## What this book assumes
+
+- You're comfortable with spreadsheets, pivot tables, and probably some SQL or VLOOKUP-style logic — you understand the *concepts* of filtering, sorting, joining, and summarizing data, even if you've never written them in code.
+- You have never written R before. That's the whole point.
+- You want to be doing real, useful work within days, not after a semester of coursework.
+
+## What makes this different from a generic R tutorial
+
+Every example in this book uses the same dataset: a synthetic version of a Department of Education **Static File** — student-level enrollment and assessment data, the kind of file that sits at the center of A–F accountability work. You'll work with the same columns, the same kinds of messy real-world values (missing data, inconsistent grade levels, multiple records per student), and the same sorts of questions (pass rates by school, growth categories, subgroup counts) that you'd typically encounter in your work.
+
+By the time you finish the core chapters, you won't just know *that* `group_by()` exists — you'll have used it to calculate a real pass rate, by real school, on real-shaped data.
+
+## How to use this book
+
+Read Part 1 and Part 2 in order — they're short, and they build the foundation everything else depends on. After that, treat the rest as a reference: jump to whatever chapter matches the task in front of you. The navigation links are designed to let you find your way back without scrolling.
+
+## The dataset
+
+A sample of the synthetic Static File (`static_file_sample.csv`) accompanies this book, along with its codebook describing every column. You'll first meet it in [Your First Import](#sec-first-import), and you'll use it throughout. The full codebook is worth keeping open in a separate tab — column meanings in the data are not always intuitive from the name alone, and this book will repeatedly point you back to it.

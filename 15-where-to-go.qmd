@@ -1,0 +1,27 @@
+# Where to Go From Here {#sec-where-to-go}
+
+You now have a working path from spreadsheets and SAS scripts to a real, reproducible R workflow — using data shaped like the work you actually do. A few honest closing notes, and where to turn when you're past what this book covers.
+
+## A realistic next few weeks
+
+- **Week 1:** Re-run the chapters in Part 2 and the early part of Part 3 against a file from your own work, not just the Static File sample. Seeing your own data behave the way the book's examples did is usually the moment this starts to feel real rather than theoretical.
+- **Week 2:** Pick one recurring task you currently do by hand — a pivot table you rebuild every reporting cycle, a VLOOKUP-heavy merge, a chart you reformat from scratch each time — and rebuild it once in R using this book's recipes. Compare the output number-for-number against your existing process before trusting it.
+- **Week 3 and beyond:** Start saving your work as scripts or Quarto documents instead of redoing the same clicks next month. The first time you re-run something instead of repeating two hours of manual work is usually the moment the investment pays for itself.
+
+You are not trying to become a software engineer. You're trying to stop re-doing the same manual process every reporting cycle — and everything in this book was selected with that specific goal in mind.
+
+## Where to look when you're stuck
+
+- **`?function_name`** in the R console pulls up that function's documentation directly — e.g., `?left_join`
+- **R for Data Science** (free online, by Hadley Wickham & Garrett Grolemund) — the closest thing to a canonical tidyverse textbook: <https://r4ds.hadley.nz>
+- **Posit Cheatsheets** — printable quick-reference cards for dplyr, ggplot2, and more: <https://posit.co/resources/cheatsheets/>
+- **Stack Overflow / Google** — searching "r how to [task]" is a completely normal and permanent part of the workflow, not a beginner habit you'll outgrow
+- **The SGP package documentation and community** — given the shared-language argument from [Why R First](#sec-why-r-first), this is genuinely worth bookmarking once you're ready to go deeper into growth-model-specific R tooling
+
+## A note on what this book didn't cover
+
+This book deliberately stayed narrow — a fast on-ramp, not a comprehensive data science curriculum. A few things worth knowing exist, even though they weren't covered here: writing your own custom functions, R's object-oriented programming patterns (relevant if you ever work directly in a larger inherited codebase), formal package development, and statistical modeling beyond simple summary statistics. None of those are necessary to be genuinely productive day to day — they're worth exploring once the core workflow in this book feels comfortable, not before.
+
+## Last thing
+
+You will look up basic syntax for months. Everyone who's gone through this transition does — it is not a sign that you're behind, and it never fully stops, even for experienced users. The goal was never to memorize everything in this book. It was to get you to the point where the first real script you write saves you real time — and from there, the rest tends to take care of itself.

@@ -1,0 +1,102 @@
+# Project Walkthrough 2: A Quarto Interactive Presentation {#sec-project-2}
+
+The first project produced a clean, validated dataset behind the scenes. This one builds something a human being will actually open and read: an interactive Quarto presentation summarizing results, suitable for sharing with a principal, a board, or your own team.
+
+## Setting up a new Quarto document
+
+Start with a new `.qmd` file (see [Quarto Essentials](#sec-quarto-essentials) for the mechanics), with a YAML header set up for revealjs slides and self-contained sharing:
+
+```yaml
+---
+title: "School Performance Summary"
+subtitle: "Static File Sample — Current Year"
+format:
+  revealjs:
+    embed-resources: true
+    controls: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+```
+
+`embed-resources: true` matters here specifically because this file is meant to be shared — a single self-contained `.html` that opens correctly on anyone's machine, with no separate image folder that could go missing. `echo: false` at the document level means code won't show by default in any chunk unless you explicitly override it per-chunk — appropriate for a presentation meant for an audience, as opposed to the code-forward reference chapters earlier in this book.
+
+## Load libraries and data once, near the top
+
+```{r}
+#| include: false
+
+library(tidyverse)
+library(plotly)
+library(gt)
+library(DT)
+
+static_file <- read_csv("data/static_file_sample.csv")
+```
+
+`include: false` hides both the code *and* any output from this setup chunk — appropriate here since loading libraries and data isn't something your audience needs to see, only something the rest of the document depends on.
+
+## A slide with an interactive visualization
+
+````
+## Scale Score Distribution by Subject
+
+```{r}
+p <- static_file |>
+  filter(!is.na(ScaleScore)) |>
+  ggplot(aes(x = ScaleScore, fill = Subject)) +
+  geom_histogram(alpha = 0.7, position = "identity") +
+  labs(x = "Scale Score", y = "Number of Students") +
+  theme_minimal()
+
+ggplotly(p)
+```
+````
+
+Because this is wrapped in `ggplotly()` (from [Visualization](#sec-visualization)), anyone viewing the rendered slide can hover over bars for exact values, zoom into a score range, or toggle subjects on and off — interactivity a static image in a PDF simply can't offer.
+
+## A slide with an interactive table
+
+````
+## Explore the Data
+
+```{r}
+static_file |>
+  filter(!is.na(Performance)) |>
+  select(SchoolName, DistrictName, Subject, Performance, ScaleScore) |>
+  datatable(filter = "top", options = list(pageLength = 8))
+```
+````
+
+This single chunk hands your audience a live, searchable, filterable version of the underlying data, directly inside the presentation — rather than a static screenshot of a table they can't interact with.
+
+## Using inline variables in your narrative
+
+This is where Quarto's literate-programming approach (text and code woven together, from [Quarto Essentials](#sec-quarto-essentials)) does real work in a presentation context. Rather than typing a number that will quietly go stale the next time this file is regenerated against updated data:
+
+`{{r}} 1+1`
+
+```{r}
+#| echo: false
+#| include: true
+
+# ``This year's sample includes `r n_distinct(static_file$SchoolName)` schools across `r n_distinct(static_file$DistrictName)` districts, with an overall ELA pass rate of `r scales::percent(mean(static_file$Passing[static_file$Subject == "ELA"], na.rm = TRUE))`.``
+
+print("`r 1+1`")
+```
+
+Every number in that sentence is computed live from `static_file` at render time. Re-run this same document against next year's data, and every figure updates correctly with zero manual editing — directly delivering on the reproducibility argument that's been a throughline of this entire book.
+
+## Previewing and sharing
+
+Use **Preview** (`Ctrl/Cmd + Shift + K`, from [Quarto Essentials](#sec-quarto-essentials)) while you build, to check slides as you go. When you're ready to share:
+
+1. Click **Preview** (or run `quarto render` from the terminal) to produce the final self-contained `.html` file
+2. Click the pop-out button in the Viewer pane to open it in a full browser window, or simply double-click the rendered `.html` file from your file system — since `embed-resources: true` is set, it will open correctly anywhere, with no separate files required
+3. Share that single `.html` file directly — email, shared drive, or anywhere else — and it will render identically on the recipient's end
+
+## What you've actually built
+
+A presentation that's simultaneously a finished deliverable *and* a script — one that can be re-rendered against next year's Static File with zero manual rework, that updates its own numbers automatically, and that gives your audience a genuinely interactive way to explore the underlying data rather than a static snapshot. This is, in miniature, the entire case for moving this kind of work into R: the investment is real, but it's a one-time investment that pays out every single time you run it again.

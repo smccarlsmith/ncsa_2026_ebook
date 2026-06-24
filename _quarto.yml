@@ -1,0 +1,52 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Education Data Workflow Desk Reference"
+  subtitle: "Getting Productive in R for District and State Data Work"
+  author: "Sean Smith"
+  date: today
+  page-footer:
+    left: "Education Data Workflow Desk Reference"
+    right: "Built with Quarto"
+  chapters:
+    - index.qmd
+    - part: "Orientation"
+      chapters:
+        - 01-why-r-first.qmd
+        - 02-initial-setup.qmd
+        - 03-meet-positron.qmd
+    - part: "Your First Data, Then the Concepts Behind It"
+      chapters:
+        - 04-your-first-import.qmd
+        - 05-fundamental-concepts.qmd
+        - 06-quarto-essentials.qmd
+    - part: "Core Data Skills"
+      chapters:
+        - 07-common-functions.qmd
+        - 08-group-summarize.qmd
+        - 09-reshaping.qmd
+        - 10-importing-everywhere.qmd
+        - 11-database-connections.qmd
+        - 12-visualization.qmd
+    - part: "Putting It Together"
+      chapters:
+        - 13-project-1-automation.qmd
+        - 14-project-2-quarto-presentation.qmd
+        - 15-where-to-go.qmd
+    - appendix-clean-public-files.qmd
+
+format:
+  html:
+    theme: cosmo
+    code-copy: true
+    fig-align: center
+    toc-depth: 3
+    embed-resources: true
+
+execute:
+  echo: true
+  eval: true
+  warning: false
+  message: false

@@ -1,0 +1,344 @@
+Order,Column Name,Description,Values,Use
+1,SchoolCode,The school entity ID number in the ADE Accountability database for which the student record is associated.,A School specific Unique numerical value,"Associates student Enrollment Records to Assessment Records for a given school year.
+Used in School identification for Federal support in Federal Accountability
+Letter Grades are assigned to SchoolCode in State Accountability."
+2,SchoolName,Name of the school in the ADE Accountability  Database as of the current fiscal year,A name,
+3,SchoolCTDS,"CTDS is an acronym for County Type District School. 
+This number is 9 digits long and is unique to each school.",A School specific Unique numerical value,
+4,DistrictCode,The LEA ID number in the ADE Accountability  database for which the student record is associated.,A District specific numerical value,Associates each LEA with the comprising Schools in order to assign district letter grades.
+5,DistrictName,Name of the LEA in the ADE Accountability Database as of the current fiscal year,A name,
+6,DistrictCTDS,"CTDS is an acronym for County Type District School. 
+This number is 9 digits long and is unique to each district.",A District specific numerical value,
+7,Charter,An indicator type column used to mark a school as charter in the ADE Accountability database.,"Binary Values:
+0 = Not Charter
+1 = Charter","The Charter column is used to group data in the public files, but is not factored into state or federal accountability calculations."
+8,County,The county with which the student's enrollment record is associated.,A name,
+9,AOI,An indicator type column used to mark a school as an Online school in the ADE Accountability database,"Binary Values:
+0 = Not Online 
+1 = Online",Differentiates Brick and Mortar Schools from Online Schools in order to calculate chronic Absenteeism for the associated student record.
+10,Alternative,An indicator column used to mark a school as an approved Alternative School in the ADE Accountability database,"Binary Values:
+0 = Not Alternative 
+1 = Alternative","Diffrentiates Traditional from Alternative schools in order to determine the state Accountability model to use as well as how FAY is Calculated.
+
+**For More Information: please reference the State Business Rules."
+11,JTED,An indicator column used to mark a school as JTED in the ADE Accountability database,"Binary Values:
+0 = Not JTED 
+1 = JTED ",
+12,Private,An indicator column used to mark a school as Private in the ADE Accountability database,"Binary Values:
+0 = Public School
+1 = Private School",
+13,SchoolTypeS,Identifies Federal Schools from State Schools,,"Removed as it is no longer used in the code, This column will be depreciated for FY 2024."
+14,SchoolTypeF,"The type of Federal Model that will be used for federal accountability identifications.
+For more information please reference the Federal Business Rules.","Discrete Values :
+1 = K2
+2=  K8
+3=  912
+4=  K11
+5=  K12
+","Used to determine the type of Federal Accountability model identified for the associated School Record.
+
+
+**For More Information: Please reference the Federal Business rules."
+15,FederalModel,"The type of Federal Model that will be used for Federal Accountability identification.
+
+**For More Information: please reference the Federal Business Rules.","Discrete Values :
+K2
+K8
+912
+K11
+K12
+","Determines the type of Federal Accountability Model to be used for identification for a given school.
+
+**Please Validate that the Federal-Model assigned to your school is correct by July 15, during the initial staticfile review period. "
+16,StateModel,"The type of State Model that will be used for state accountability evaluations.
+For More Information: please reference the State Business Rules.","Discrete Values :
+K8
+912 
+Non-Typical
+Alternative 
+InEligible
+","Identifies the type of State Accountability model to be used in A-F Accountability.
+InEligible is assigned to schools where the 9-12 and k-8 student populations do not meet the state N-Count of 10 separately.
+
+**Please Validate that the State-Model assigned to your school is correct by July 15, during the initial staticfile review period. "
+17,FiscalYear,"The Fiscal year associated with the student enrollment records in the StaticFile. It is analogous to School Year for accountability purposes, corresponding to the year in which the school year ends. For example the 2022-2023 school year is Fiscal Year 2023. ","Numerical values:
+2023 -> Current Year Records
+2022 -> Prior year Record of a Current Year 3rd Grader that was in a K-2 School the prior year.","Identifies current year records.
+School Under the k-2 Model of Federal accountability will see their Prior Year (2nd Graders) associated with the previous Fiscal Year."
+18,SAISID,A Unique student identifier in ADE Accountability and AzEDS database,A student specific unique numerical value,
+19,FirstName,Student's first name as it appears on the legal document provided for registration at the school and submitted in AzEDS ,Name ,
+20,MiddleName,Student's middle name as it appears on the legal document provided for registration at the school and submitted in AzEDS,Name ,
+21,LastName,Student's last name as it appears on the legal document provided for registration at the school and submitted in AzEDS,Name ,
+22,BirthDate,Date of birth of the enrolled student as it appears on the legal document provided for registration at the school and submitted in AzEDS,Date,
+23,Gender,Student's gender ,"Discrete Values :
+M = Male                                                            
+F = Female 
+U = UnKnown",
+24,StudentGrade,"Enrollment Grade for the student for Which an Assessment was taken during the school year, Otherwise, the latest Grade enrollment per school","Discrete Values :
+55 = US, Ungraded Secondary                        
+66 = UE, Ungraded Elementary                    
+77 = PS, Pre-School                                           
+-1  = KG, Kindergarten                                      
+1   = 1st Grade                                                    
+2   = 2nd Grade                                                    
+3   = 3rd Grade                                                    
+4   = 4th Grade                                                    
+5   = 5th Grade                                                    
+6   = 6th Grade                                                    
+7   = 7th Grade                                                    
+8   = 8th Grade                                                    
+9   = 9th Grade                                                    
+10 = 10th Grade                                               
+11 = 11th Grade                                                
+12 = 12th Grade                                               
+","Identifies the student records to apply the Accountability indicators to; consistent with the grade level inclusion Criteria listed in the Federal and State Business Rules.
+
+**For More Information: Please reference the State and Federal Business rules."
+25,Ethnicity,A letter value associated with ethnicity/race classifications as it appears on the legal document provided for registration at the school and submitted in AzEDS,"Discrete values:
+A  = Asian 
+B  = Black or African American                     
+H  = Hispanic or Latino                                      
+I   = American Indian or Alaskan Native       
+P  = Native Hawaiian or Pacific Islander       
+R  = Multiple Races 
+W = White              
+U  = UnKnow","Identifies the ethnic subgroups for aTSI and TSI identification in Federal Accountability.
+Identifies the ethnic subgroups for the SubGroup Improvement Indicator and Acceleration, Readiness Component in State Accountability.
+
+**For More Information: please reference the State and Federal Business rules."
+26,Cohort,"Student’s assigned cohort.
+
+
+**For More Information: Please reference the Persistence and Grad Rate Technical Manual","Numerical Value:
+YYYY","Students Eligible for grade 9 or 11 testing in any relevant State or Federal accountability measures are determined using the Student Cohort Values.
+Grade 11 Cohort Year = Fiscal Year + 1
+Grade 9 Cohort Year = Fiscal Year + 3"
+27,SPED,An indicator to denote the students identified as receiving SPED Services on October 1 of the relevant Fiscal Year,"Binary Values:
+0 = Not SPED                                                      
+1 = SPED 
+","Identifies the SPED subgroup for aTSI and TSI identification in Federal Accountability.
+Identifies the SPED subgroups for SubGroup Improvement indicator in State Accountability.
+Identifies the SPED Students' Counts for Special Education Enrollment Bonus Point.
+
+**For More Information: please reference the State and Federal Business rules."
+28,IncomeEligibility1and2,An indicator to denote the students identified at the student level as “IncomeEligibility1” and “IncomeEligibility2” (Economically Disadvantaged students),"Binary Values:
+0 = Not Economically Disadvantaged
+1 = Economically Disadvantaged","Identifies the ethnic subgroups for aTSI and TSI identification in Federal Accountability.
+Identifies the ethnic subgroups for the SubGroup Improvement indicator in State Accountability.
+
+**For More Information: please reference the State and Federal Business rules."
+29,Homeless,An indicator to denote the students identified as homeless.,"Binary Values:
+0 = Not Homeless
+1 = Homeless","Identifies the Homeless subgroup for the SubGroup Improvement indicator in State Accountability.
+
+**For More Information: please reference the State Business rules."
+30,Foster,An indicator to denote the students identified as in Foster care.,"A binary column:
+0 = Not Foster
+1 = Foster","Identifies the Foster subgroup for the SubGroup Improvement Indicator in State Accountability.
+
+**For More Information: please reference the State Business rules."
+31,FAY,"FAY is an Acronym for ""Full Academic Year"". This values denotes the number of years a student is FAY at the School, if applicable.
+
+For More Information on how FAY is calculated: please reference the State Business rules.","Discrete Numeric values:
+0 = not FAY                                                        
+1 = 1-year FAY                                                    
+2 = 2-year FAY                                                   
+3 = 3-year FAY 
+","Used as one of the Inclusion criteria for many Accountability Components and Indicators.
+
+**For more information Please reference the State Business Rules."
+32,DistrictFAY,"FAY is an Acronym for ""Full Academic Year"". This values denotes the number of years a student is FAY at the District level, if applicable.
+
+For More Information on how FAY is calculated: please reference the State Business rules.","Discrete Numerical values:
+0 = not FAY                                                        
+1 = 1-year FAY                                                    
+2 = 2-year FAY                                                   
+3 = 3-year FAY 
+",
+33,Military,An indicator to denote the students identified with a Parent in Military.,"Binary Values:
+0 = Parent Not in Military
+1 = Parent in Military","Identifies the Parent In Military subgroup for the SubGroup Improvement Indicator in State Accountability.
+
+**For More Information: please reference the State Business rules."
+34,DRP,An indicator to denote whether the student is enrolled in a Dropout Recovery Program (DRP) at the School level.,"Binary Values:
+0 = Not DRP
+1 = DRP", Used for the annual ADE DRP report
+35,ADMIntegrity,An indicator to denote whether the associated student enrollment record has passed integrity checks (has no Accountability or Membership related AzEDs Integrity Errors).,"Binary Values:
+0 = Failed Integrity
+1 = Passed Integrity","The Values in this column are used to identify the students to be included in the Accountability calculations as having passed Integrity. Students who did not pass Integrity are not to be included in Accountability.
+"
+36,TuitionPayerCode,"Tuition Payer is used to signify which memberships will generate State funding and which ones will not. 
+It is set by ADE's School Finance Department.","Discrete Numerical values:
+1, 2, 4, 5, 6, 7, NULL",Students With a tuition payer code of 2 are excluded from all Accountability calculations.
+37,EL,Student was considered to have an EL need in the current year at the associated school.,"Binary Values:
+0 = No EL Need                                                  
+1 = EL Need 
+",The values in this column are used to Identify the English Learner students' Population in the Static-File.
+38,ELGroup,Provides additional detail on the student's EL need indicated in the EL column.,"Discrete Numerical Values:
+0 = No EL Need
+1 = ELL Need but not enrolled in ELL services
+2 = ELL Need and enrolled in ELL services
+3 = SPED withdrawn from ELL services
+4 = Parent withdrawn from ELL services
+5 = Reclassified in the current fiscal year
+","The values in this column are used to populate the values in the ""EL"" Binary indicator column in the Static-File."
+39,ELFEP,This is an indicator to denote Current English Language Learners or students Reclassified as Fluent English Proficient (FEP) in the past 4 years ,"Binary Values:
+0 = Niether an EL or FEP student
+1 = EL student or FEP student","The values in this column are used to identify the English Learners as well as those who Re-classified within the past 4 years as a SubGroup. The Identified SubGroup is used in State and Federal Accountability components as defined by the State and Federal Business Rules.
+
+**For more information on how ELFEP SubGroup is used in Accountability: Please Reference the State and Federal Business Rules."
+40,ELAMathWindow,"This is an indicator to denote if a student was enrolled at the associated school during the ELA and Math testing window for the ""AssessmentFamily"" associated.
+
+For More Information on The Assessment window dates: please reference the State Business rules.","Binary Values:
+0 = Not Enrolled During ELAMathWindow
+1 = Enrolled During ELAMathWindow","Determines which students to include in the Percent Tested indicator under the Proficiency Component in State and Federal Accountability.
+
+**For more information on the Percent Tested calculations: Please Reference the State and Federal Business Rules."
+41,Oct1Enroll,This is an indicator to denote if a student was enrolled on October 1st at the associated school of the given Fiscal Year.,"Binary Values:
+0 = Not Enrolled on October 1st
+1 = Enrolled on October 1st","This value will not be used in FY2023 accountability calculations, but may be used in future years. "
+42,SciWindow,"This is an indicator to denote if a student was enrolled at the associated school during the Science testing window for the indicated ""AssessmentFamily"".
+
+For More Information on The Assessment window dates: please reference the State Business rules.","Binary Values:
+0 = Not Enrolled During SciWindow
+1 = Enrolled During SciWindow","Determines which students to include in the Percent Tested calculation for the Science Proficiency Bonus Points eligibility in State Accountability.
+
+**For more information on the Percent Tested calculations: Please Reference the State Business Rules."
+43,AOIFTE,"The full-time equivalent ratio for the student’s assignment to a school for services or instruction. For example, a full-time student would have an FTE value of 1 while a half-time student would have an FTE value of 0.5. ",Numeric Value between 0 - 1 ,
+44,RAEL,An indicator to identify Recently Arrived Limited English Proficient students.,"Discrete Numerical Values:
+0 = Not RAEL                                                              
+1 = RAEL and 1st year 
+2 = RAEL and 2nd year 
+3 = RAEL and 3rd year 
+","The values in this column are used to identify 1st and 2nd year Recently arrived english Learners to be excluded from State and Federal Accountability Indicators of ELA Proficiency as defined by the State and Federal Business Rules.
+
+**For more Information on how RAEL is used in Accountability: Please Reference the State and Federal Business Rules."
+45,ELFAY,"An indicator to identify Full Academic Year students (FAY) for the AZELLA assessment.
+
+For More Information on how ELFAY is Calculated: please reference the State Business rules.","Binary Values:
+0 = Not ELFAY                                                                
+1 = ELFAY
+","The values in this column are used to identify Students considered to be Full Academic Year enrolled with regards to the English learner criteria defined in the State and Federal Business Rules.
+
+**For more information on how ELFAY is calculated: Please Reference the State and Federal Business Rules."
+46,Subject,Subject of assessment taken by student.,"ELA = English Language Arts
+Math = Math
+Sci = Science
+
+N.B Students in non-testing Grades will have a missing Value here.",The values in this column are used to distinguish the Academic Subject tested on Arizona StateWide Assessments; for all Accountability components that incorporate Academic outcomes.
+47,ScaleScore,Scale score on assessment taken.,"A Numerical Value
+
+N.B Non-tested students will have a missing value here.","The values in this column are used in conjunction with the values in ""PYSS"" to calculate the ""SGP_CCR"" column."
+48,G8Math,An indicator to denote Grade 8 Math records with a Highly proficient or a Minimally proficient score.,"Binary Values:
+0 =Not a Grade 8 Math Record
+1= A Grade 8 Math Record","Used in the Grade 8 Math Performance Indicator in the Acceleration / Readiness component of State Accountability.
+
+**For more information on the Acceleration Readiness component: Please reference the State Business Rules."
+49,Performance,"Current Year Performance Level          
+","Discrete Numerical Values:
+1 = Minimally Proficient
+2 = Partially Proficient            
+3 = Proficient                                       
+4 = Highly Proficient","The values in this column are used to calculate the Proficiency component in State and Federal Accountability.
+
+**For More information on the proficiency component calculations: Please Reference the State and Federal Business Rules."
+50,Accommodation,An indicator to identify Students that recieved accommodations on the associated assessment.,"Binary Values:
+0 = No Accomodations
+1 = Accomodations reported","The Accommodation column is used in creating the public file, but is not considered for A-F Accountability. Note: Currently (June 2023), ACT-approved accommodations data is still pending, and will show as '0'."
+51,AssessmentGrade,The grade level of the associated assessment type. This column will match Student Grade for all records except records associated with K2 schools in the staticfile for federal accountability.,"Discrete numeric values:
+3 = 3rd grade
+4 = 4th grade
+5 = 5th grade
+6 = 6th grade
+7 = 7th grade
+8 = 8th grade
+9 = 9th grade
+11 =11th grade","The values in this column indicate the grade level associated with the assessment type listed in the ""AssessmentFamily"" column. These values are used to identify the enrollment record grade upon which the student was assessed."
+52,G3ELA,An indicator to denote Grade 3 ELA records with a Minimally proficient score.,"Binary Values:
+0 = Not a Grade 3 ELA Minimally Proficient Record
+1 = A Grade 3 ELA Minimally Proficient Record","The values in this column are used in the Grade 3 Minimally Proficient Improvement Indicator in the Acceleration / Readiness component of State Accountability.
+
+**For more information on the Acceleration Readiness component: Please reference the State Business Rules."
+53,TestType,An indicator to denote Alternative vs regular assessments.,"Discrete Numerical Values:
+680 = Regular Assessments
+685 = Alternative Assessments",
+54,AssessmentTestStatus,The status of the Assessment test results reported to ADE if applicable.,"Discrete Values:
+DNR = Do Not Report
+ESM = Early Stopping Rule Misadministration
+ESR = Early Stopping Rule
+Incomplete = Incomplete 
+Not Provided = Not Provided
+TES = Tested",
+55,AssessmentFamily,A column describing the name of the assessment taken by the associated student.,"Discrete values:
+AASA = Arizona's Academic Standards Assessment
+ACTASPIRE = ACT Aspire
+AZACT = Arizona ACT
+AZSCI = Arizona Science
+MSAA =  Multi-State Alternate Assessment
+NotEligible = Students in NON-testing grades
+NotTested = Students in Testing grades BUT Not-tested",
+56,StateWideTested,An indicator to denote whether the student enrollment record was matched to an assessment record of the associated subject.,"Binary Values:
+0 = Not Tested
+1 = Tested",
+57,Passing,An Indicator to denote whether the associated student assessment record shows a Proficient or higher performance level.,"Binary Values:
+0 = Didn't receive a Passing Score
+1 = Passing Score",
+58,SGP_CCR,A numerical value denoting the Student Growth Percentile for the associated student assessment.,Numerical Value between 1-99 ,"The values in this column are used to produce the ""SGP_CCR_Category"" column."
+59,SGP_CCR_Category,Student Growth Percentile – Current Cohort Referenced – Category,"Discrete Numerical Values:
+0 = Low Growth (SGP-CCR 1-33)                      
+1 = Average Growth (SGP-CCR 34-66)            
+2 = High Growth (SGP-CCR 67-99) 
+","The values in this column are used along with ""PYPerformance""  in the Growth indicator of State Accountability to assign weights for growth points.
+
+**For more information on how growth points are calculated for state accountability: please reference the State Business Rules."
+60,PYSS,Scale score on the prior year assessment taken in the same subject.,"A Numerical Value
+
+N.B students with no prior year record will have a missing value here.","The values in this column are used to calculate SGP and SGT.
+
+**For more information on SGP: please reference the State Business Rules."
+61,PYPerformance,"Prior Year Performance Level  	
+","Discrete Numerical Values:
+1 = Minimally Proficient
+2 = Partially Proficient            
+3 = Proficient                                       
+4 = Highly Proficient","The values in this column are used along with ""SGP_CCR_Category""  in the Growth indicator of State Accountability to assign weights for growth points.
+
+**For more information on how growth points are calculated for state accountability: please reference the State Business Rules."
+62,ELTested,"If the student was assessed on AZELLA 	
+","Binary Values:
+0 = Not ELTested                                                                 
+1 = ELTested",
+63,PYELProf,"Prior Year Proficiency level on AZELLA. If the student does not have an AZELLA Score from the Prior school year, then PYELProf refers to their Current year Placement test If Applicable.
+
+For Azella Placement test cutoff dates please refer to the State Business Rules. ","Discrete numeric values:                                                    
+1 = Pre-Emergent/Emergent                         
+2 = Basic                                                             
+3 = Intermediate                                              
+4 = Proficient 
+",The values in this column are used to calculate the EL Growth Column in the Static-File.
+64,ELProf,Proficiency level on AZELLA,"Discrete numeric values:     
+ 1 = Pre-Emergent/Emergent 
+ 2 = Basic 
+ 3 = Intermediate 
+ 4 = Proficient",The values in this column are used to calculate the EL Proficiency Percentage for each school as part of the EL Indicator is State and Federal Accountability.
+65,ELGrowth,Growth on AZELLA,"Discrete Numerical Values:
+0 = No growth 
+ 1 = 1 level change 
+ 2 = 2 level changes 
+ 3 = 3 level changes",The values in this column are used to calculate the EL Growth average for each school as part of the EL Indicator is State and Federal Accountability.
+66,SPEDInclusion,"An indicator to denote students that are receiving SPED services as of October 1st of the current fiscal year and are spending 80% or more of their time in a regular classroom.
+This is indicated in SPED07 AzEDS report as having a need/service code of ""A""","Binary Values:
+0 = Not SPEDInclusion
+1 = SPEDInclusion",The values in this column are used in the SPED Inclusion component of the Acceleration/Readiness Indicator.
+67,ChronicAbsent,"An Indicator to denote students that have absences greater than 10%.
+
+For More Information on how ChronicAbsenteeisim is calculated: please reference the State Business rules.","0 = Not Chronically Absent 
+ 1 = Chronically Absent",The values in this column are used in State and Federal accountability Chronic absenteeism related measures.
+68,TestingWindow,"This is an indicator to denote if a student was enrolled at the associated school during the ELA and Math OR Science testing window for the associated ""AssessmentFamily"" .
+
+For More Information on The Assessment window dates: please reference the State Business rules.","Binary Values:
+0 = Not Enrolled During TestingWidnow
+1 = Enrolled During TestingWidnow","Determines which students to include in the Percent Tested indicator under the Proficiency Component in State and Federal Accountability.
+
+**For more information on the Percent Tested calculations: Please Reference the State and Federal Business Rules."
+69,SnapShotDate,The date the data in the staticfile was last updated.,mm/dd/yyyy,Used to reference the different versions of the static file.

@@ -1,0 +1,91 @@
+# Project Walkthrough 1: Automating a Multi-Tab Import {#sec-project-1}
+
+This is the first of two end-to-end projects that pull together everything in this book so far. The scenario: you receive an Excel workbook with one tab per year of assessment data, and you need a clean, tidy, combined dataset — plus a validation file confirming the import looks right — produced automatically every time, rather than rebuilt by hand each cycle.
+
+This belongs in a plain `.R` script rather than a `.qmd` document, since the goal is unattended automation, not a narrated report (see the file-type distinction in [Initial Setup](#sec-initial-setup)).
+
+## The goal, end to end
+
+1. Read every tab from a multi-year Excel workbook
+2. Combine them into one tidy data frame
+3. Reshape into long format for easier downstream analysis
+4. Produce summary statistics as a validation check
+5. Write both the tidy data and the validation summary to separate output folders
+
+## Step 1: Read every tab
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+file_path <- "data/multi_year_assessment_results.xlsx"
+
+sheet_names <- excel_sheets(file_path)
+
+raw_list <- sheet_names |>
+  map_dfr(~ read_excel(file_path, sheet = .x) |> mutate(source_sheet = .x))
+```
+
+Notice the addition of `mutate(source_sheet = .x)` inside the map step — tagging every row with which tab it came from before combining. This is cheap insurance: if anything looks wrong later, you can immediately trace a record back to its source tab rather than guessing.
+
+## Step 2: Clean and combine
+
+```{r}
+tidy_data <- raw_list |>
+  clean_names() |>
+  filter(!is.na(scale_score))   # drop non-assessed records for this particular analysis
+```
+
+## Step 3: Reshape to long format
+
+Suppose each year's tab had separate columns per subject (`ela_score`, `math_score`, `sci_score`) — a common real-world shape for a multi-year export. Reshape into one row per student per subject:
+
+```{r}
+tidy_long <- tidy_data |>
+  pivot_longer(
+    cols = ends_with("_score"),
+    names_to = "subject",
+    names_pattern = "(.*)_score",
+    values_to = "scale_score"
+  )
+```
+
+`names_pattern` here extracts just the subject portion of each column name (`ela`, `math`, `sci`) rather than keeping the full `_score` suffix — a small refinement on the basic `pivot_longer()` pattern from [Reshaping](#sec-reshaping).
+
+## Step 4: Build a validation summary
+
+Before trusting any pipeline's output, generate counts and summary statistics you can quickly eyeball against what you'd expect:
+
+```{r}
+validation_summary <- tidy_long |>
+  group_by(source_sheet, subject) |>
+  summarize(
+    n_records      = n(),
+    n_missing      = sum(is.na(scale_score)),
+    avg_scale_score = mean(scale_score, na.rm = TRUE),
+    min_score      = min(scale_score, na.rm = TRUE),
+    max_score      = max(scale_score, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+This is the kind of table you'd glance at every time the pipeline runs — a sudden jump in `n_missing`, or an `avg_scale_score` outside the range you expect, is often the first sign something upstream changed before you'd otherwise notice.
+
+## Step 5: Write outputs to separate subfolders
+
+```{r}
+dir.create("output/tidy", recursive = TRUE, showWarnings = FALSE)
+dir.create("output/validation", recursive = TRUE, showWarnings = FALSE)
+
+write_csv(tidy_long, "output/tidy/assessment_results_tidy.csv")
+write_csv(validation_summary, "output/validation/validation_summary.csv")
+```
+
+`dir.create(..., showWarnings = FALSE)` quietly creates the folder if it doesn't exist yet, and does nothing (without throwing an error) if it already does — useful for a script meant to run unattended and repeatedly.
+
+## Why this is worth the setup
+
+The entire sequence above — reading, cleaning, reshaping, validating, and writing — is now a single script. Next year, when a new tab gets added to the source workbook, **nothing about this script needs to change.** `excel_sheets()` picks up the new tab automatically, `map_dfr()` combines it in automatically, and the validation summary will include it without you touching a single line. This is the compounding-returns argument for scripted work in its purest form: the investment happened once, here, and every future run is free.
+
+The next chapter builds the second kind of deliverable — not an automated pipeline, but an interactive Quarto presentation meant for a human audience to actually read and explore.

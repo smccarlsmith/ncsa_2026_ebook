@@ -1,0 +1,139 @@
+# Visualization {#sec-visualization}
+
+## The grammar of graphics, in plain terms
+
+Excel's Chart Wizard asks you one question up front: *what type of chart do you want?* `ggplot2` — the charting package you'll use throughout this chapter — asks a different question first: ***what does each variable in your data mean in the picture you're about to build?*** This way of thinking is called the **grammar of graphics**, and once it clicks, it tends to make charting in R feel less like memorizing chart types and more like describing what you already understand about your data.
+
+Two pieces of vocabulary worth having before the first example:
+
+- **Aesthetics (`aes()`)** — which columns map to which visual properties. Does `ScaleScore` control position on the x-axis? Does `Subject` control color? You're deciding what each variable's *job* is in the picture, before deciding how anything gets drawn.
+- **Layers** — think of a chart as a stack of transparent sheets, each one adding something: one layer draws points, another adds a trend line, another adds labels. You build a chart by stacking layers with `+`, and you can add, remove, or reorder them independently.
+
+## The basic pattern
+
+```{r}
+library(ggplot2)
+
+ggplot(data = static_file, aes(x = ScaleScore, y = SGP_CCR)) +
+  geom_point()
+```
+
+Read this as a sentence: *"Using static_file, map ScaleScore to the x-axis and SGP_CCR to the y-axis, then draw points."* `aes()` set up the meaning; `geom_point()` is the layer that actually draws something using that meaning.
+
+## Common chart types — same data, different geom
+
+The aesthetics often barely change between chart types — usually, only the `geom_*()` layer does:
+
+```{r}
+static_file |>
+  filter(!is.na(Performance)) |>
+  count(Subject, Performance) |>
+  ggplot(aes(x = factor(Performance), y = n, fill = Subject)) +
+  geom_col(position = "dodge")             # bar chart
+
+ggplot(static_file, aes(x = ScaleScore)) +
+  geom_histogram()                          # histogram
+
+ggplot(static_file, aes(x = factor(StudentGrade), y = ScaleScore)) +
+  geom_boxplot()                            # boxplot, score distribution by grade
+```
+
+## Adding color, labels, and a cleaner look
+
+```{r}
+static_file |>
+  filter(!is.na(Performance), Subject == "ELA") |>
+  ggplot(aes(x = ScaleScore, fill = factor(Performance))) +
+  geom_histogram(alpha = 0.8) +
+  labs(
+    title = "ELA Scale Score Distribution by Performance Level",
+    x = "Scale Score",
+    y = "Number of Students",
+    fill = "Performance Level"
+  ) +
+  theme_minimal()
+```
+
+`labs()` is where your titles and axis labels live; `theme_minimal()` is one of several built-in themes that strip away Excel's default gray gridline clutter. `theme_bw()`, `theme_classic()`, and others are worth trying — swapping a theme is a one-word change, not a re-build.
+
+## Faceting — one chart per group, automatically
+
+```{r}
+static_file |>
+  filter(!is.na(ScaleScore)) |>
+  ggplot(aes(x = ScaleScore)) +
+  geom_histogram() +
+  facet_wrap(~ Subject)
+```
+
+This single line replaces manually building and formatting a separate chart per subject — `facet_wrap()` does it in one pass, with consistent formatting guaranteed across every panel.
+
+## Making it interactive: plotly::ggplotly()
+
+Everything above produces a static image. Wrapping a finished `ggplot2` chart in `ggplotly()` turns it interactive — hover tooltips, zoom, and pan — with no rebuilding required:
+
+```{r}
+library(plotly)
+
+p <- static_file |>
+  filter(!is.na(Performance)) |>
+  ggplot(aes(x = factor(Performance), fill = Subject)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Student Counts by Performance Level and Subject")
+
+ggplotly(p)
+```
+
+This is particularly effective inside a Quarto HTML document or presentation (see [Project Walkthrough 2](#sec-project-2)) — a static chart in a PDF becomes something a viewer can actually explore.
+
+## Tables: gt for polished static tables
+
+The `gt` package ("grammar of tables," deliberately named to echo `ggplot2`'s philosophy) turns a summarized data frame into a publication-quality formatted table:
+
+```{r}
+library(gt)
+
+static_file |>
+  group_by(SchoolName) |>
+  summarize(n_students = n(), avg_scale_score = mean(ScaleScore, na.rm = TRUE), .groups = "drop") |>
+  arrange(desc(avg_scale_score)) |>
+  head(10) |>
+  gt() |>
+  tab_header(title = "Top 10 Schools by Average Scale Score") |>
+  fmt_number(columns = avg_scale_score, decimals = 1)
+```
+
+This is the kind of table you'd put directly into a report someone is reading top to bottom — formatted, titled, and ready to present, rather than a raw printed data frame.
+
+## Tables: DT for interactive, explorable tables
+
+When the audience needs to search, sort, filter, or export the data themselves — rather than just read a fixed top-10 list — the `DT` package builds an interactive table widget, well suited to an HTML Quarto document:
+
+```{r}
+library(DT)
+
+static_file |>
+  select(SchoolName, DistrictName, Subject, Performance, ScaleScore) |>
+  datatable(
+    filter = "top",                 # column-level filter boxes
+    extensions = "Buttons",
+    options = list(
+      scrollY = "400px",            # scroll instead of paginating
+      paging = FALSE,
+      dom = "Bfrtip",
+      buttons = c("csv")            # a CSV download button, built in
+    )
+  )
+```
+
+A reader can filter to one school, sort by scale score, or export exactly the slice they care about — all without you building separate views for them. This is the table format you'll use in [Project Walkthrough 2](#sec-project-2).
+
+## Inline values, tying it back to Quarto
+
+As covered in [Quarto Essentials](#sec-quarto-essentials), any of the values you calculate in this chapter can be dropped directly into a sentence of prose using inline code:
+
+```{r}
+# The average ELA scale score across all schools in this sample is `r round(mean(static_file$ScaleScore[static_file$Subject == "ELA"], na.rm = TRUE), 1)`.
+```
+
+Combined with a `gt` table and a `ggplotly()` chart, this is the core toolkit behind both project walkthroughs that close out this book — starting with the next chapter.

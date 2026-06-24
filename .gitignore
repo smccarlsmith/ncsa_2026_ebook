@@ -1,0 +1,11 @@
+# Data files — not for version control
+synt_static.R
+resources/anon_static_file_2025.csv
+
+# R and Quarto working files
+_book/
+.Rproj.user
+.Rhistory
+.RData
+/.quarto/
+**/*.quarto_ipynb

@@ -1,0 +1,256 @@
+# Fundamental Concepts {#sec-fundamental-concepts}
+
+You already have `static_file` loaded from the last chapter. Everything in this chapter names a piece of what you're already looking at. If you've shut down your R session, you will need to re-run the code to read in the data.
+
+## Variable assignment
+
+When you read the contents of the csv file, you assigned it to a variable called `static_file` (you can call it anything you like), so the code `static_file <- read_csv(...)` is an assignment. The arrow `<-` takes whatever's on the right and stores it under the name on the left. Without the arrow, R would still read the contents of the file, but the data wouldn't be saved to view or work with.
+
+Anything can be assigned a name this way: a data frame, a single number, a short set of values. Once assigned, that name persists in your session (visible in the Variables pane from [Meet Positron](#sec-meet-positron)) until you clear it or close R.
+
+Here's an example. The code below removes all the duplicate values in the Subjects column and saves the unique subject names to a variable called test_subjects
+
+```{r}
+library(tidyverse)
+
+static_file <- read_csv("data/static_file_sample.csv")
+```
+
+```{r}
+test_subjects <- unique(static_file$Subject)
+
+# Show the results
+test_subjects
+```
+
+## Data frames
+
+`static_file` is a **data frame** — a rectangular table of rows and columns, exactly like a tab in a spreadsheet or a table in a database. Each column holds one consistent type of data (text, whole numbers, decimals, dates, or `TRUE`/`FALSE` logical values).
+
+You can see what type of object is assigned to a variable by using the `class()` function. Calling `class()` on static_file tells you it is a data frame.
+
+```{r}
+class(static_file)
+```
+
+It's important to know that each column in the data frame can *only* include values that are the same data type. You've probable seen little green triangle in Excel cells warning you that numbers are stored as text. You might see this in something like a ScaleScore column. You might have cells with values of `240`, `480`, and `362 pts`. Because the final value contains letters, it means everything in that column is stored as text and you won't be able to use any of the numbers for mathematical operations. You would need clean the data and change it to a numeric column. When we used the `glimpse()` function, it showed the class of each column in the data frame.
+
+## Vectors
+
+A single column pulled out of a data frame is a **vector** — a sequence of values, all the same type. You can pull one out using `$`. For the example below, I'll print only the first 10 "cells".
+
+```{r}
+#| eval: false
+
+static_file$ScaleScore
+```
+
+```{r}
+#| echo: false
+
+head(static_file$ScaleScore, 10)
+```
+
+A vector doesn't have to come from a data frame, you can build one directly:
+
+```{r}
+sample_grades <- c(3, 4, 5, 6)
+sample_grades
+```
+
+`c()` ("combine") is how you build a vector from individual values by hand. You'll use it constantly, especially with `filter()` (as you'll see in the next chapter).
+
+## Vectorized behavior
+
+This is one of the most important mental models to walk away with. In a spreadsheet, you write a formula once and **drag it down** an entire column. R does the equivalent automatically — operations apply to every "cell" of a column at once, with no dragging, no loop, no "fill down".
+
+For example, we can look at the `ScaleScore` column. For clarity, I'll only show the values first 10 "cells".
+
+```{r}
+#| eval: false
+static_file$ScaleScore
+```
+
+```{r}
+#| echo: false
+head(static_file$ScaleScore, 10)
+```
+
+If I add five to the column, they syntax is just to say `Column + 5`. `5` will be added to every row in that column. Again, I'll just show the values in the first 10 "cells".
+
+```{r}
+#| eval: false
+# Every scale score, increased by 5 points, all at once
+static_file$ScaleScore + 5
+```
+
+```{r}
+#| echo: false
+head(static_file$ScaleScore, 10) + 5
+```
+
+Here's another example using a logical operation, asking whether each "cell" in the `ScaleScore` column is greater than `450`. R will return a vector of `TRUE` or `FALSE` for each element.
+
+```{r}
+#| eval: false
+# A TRUE/FALSE flag for every single row, simultaneously
+static_file$ScaleScore > 450
+```
+
+```{r}
+#| echo: false
+
+head(static_file$ScaleScore, 10) > 450
+```
+
+If you've ever worked with array formulas or named ranges in spreadsheets, this may feel familiar.
+
+There's no step where R goes row by row asking you what to do next — the whole column transforms in one motion. This concept is responsible for most of why R code tends to be short and easily readable: you're describing the operation once, and it's understood to apply everywhere. Once you get used to it, it starts to feel natural since it is written almost the same way you would say it out load: "ScaleScore plus 5" rather than a cell reference like `C7 + 5` followed by `C8 + 5`. It also helps avoid mistakes like copy/paste errors, not dragging far enough, or accidentally deleting a formula from one cell.
+
+## Lists
+
+A vector requires every element to be the same type. A **list** is more flexible — it can hold a mix of types, including other data frames or vectors, bundled together. When I first started programming, I struggled with this concept and when it might be used. One of the most common uses is to store several data frames together. This would be similar to the concept of a "workbook" that holds several tabs. Each tab in the workbook can be completely different, similarly each element of a list can be different. That's an oversimplified explanation, but bundling several data frames together is a common use for lists.
+
+The code below creates a list with 3 elements: 2 data frames (`student_list` and `school_list`) and, to show how lists can hold different objects, a plot called `chart`. This would be analagous to a spreadsheet with two data tabs and one chart tab.
+
+```{r}
+#| echo: false
+
+prof_growth_viz <- static_file |> 
+  filter(StateGrowth == 1) |> 
+  distinct(SchoolCode, SchoolName, SAISID, Subject, Performance, SGP_CCR) |> 
+  mutate(n = 1) |> 
+  group_by(SchoolCode, SchoolName, Subject) |> 
+  summarise(
+    avg_pl = mean(Performance, na.rm = TRUE), 
+    avg_sgp = mean(SGP_CCR, na.rm = TRUE), 
+    tot_stu = sum(n)
+  ) |> 
+  ungroup() |> 
+  ggplot(aes(x = avg_sgp, y = avg_pl, size = tot_stu, color = Subject)) +
+  geom_vline(xintercept = 50, linetype = "dashed", color = "grey50") +
+  geom_hline(yintercept = 2.5, linetype = "dashed", color = "grey50") + 
+  geom_point(alpha = 0.7) + 
+  theme_bw() + 
+  theme(legend.position = "none") + 
+  facet_wrap(~Subject, ncol = 2) + 
+  labs(
+    title = "Comparison of Growth and Proficiency", 
+    x = "Average Student Growth Percentile", 
+    y = "Average Performance Level"
+  ) 
+
+prof_growth_viz <- plotly::ggplotly(prof_growth_viz)
+```
+
+```{r}
+# Create the list
+my_list <- list(
+  students = distinct(static_file, SAISID, FirstName, LastName), 
+  schools = distinct(static_file, DistrictCode, DistrictName, SchoolCode, SchoolName), 
+  prof_growth_plot = prof_growth_viz
+)
+
+# glimpse the first item (student data)
+glimpse(my_list$students)
+
+# glimpse the second item (school data)
+glimpse(my_list$schools)
+
+# View the plot
+my_list$prof_growth_plot
+
+```
+
+When you're starting, you probably won't use lists very often, but it's good to know they exist, and you'll see one of the most common uses (reading and combining multiple spreadsheets) later in this book (see [Importing From Everywhere](#sec-importing-everywhere)).
+
+## The pipe
+
+You've already seen `$` used to pull a column out. The **pipe**, written `|>` , is how you chain a sequence of steps together. For me, it took some to wrap my head around the concept. I was used to spreadsheets functions which are evaluated "inside out": the first function you read is the last one performed, and earlier functions are nested inside parentheses. The pipe syntax makes your code much more readable, it creates a list of sequential steps. Each step performs the function, and sends the result to the next line.
+
+The code below uses the pipe operator to create a data set of charter schools in 4 steps:
+
+1.  Create a copy of `static_file` by assigning it to a variable called `charter_schools`
+2.  Filter the data to rows with a value of `1` in the `Charter` column
+3.  Select only the `SchoolCode` and `SchoolName` columns
+4.  Remove duplicates using the `distinct` function
+
+```{r}
+charter_schools <- static_file |>
+  filter(Charter == 1) |>
+  select(SchoolCode, SchoolName) |> 
+  distinct()
+
+# glimpse the new data frame
+glimpse(charter_schools)
+```
+
+Without the pipe, the same operation requires nesting function calls inside each other, which gets hard to read fast as steps accumulate. Below is the same code, written without the pipe (similar to a spreadsheet set of nested formulas)
+
+```{r}
+charter_schools <- distinct(select(filter(static_file, Charter == 1)))
+```
+
+You'll see `|>` in almost every code example for the rest of this book — it's less a separate concept to learn than a connector that makes everything else more readable.
+
+You may also encounter an older version of the pipe, `%>%`, in other people's code or older tutorials — it comes from the `magrittr` package and behaves almost identically. `|>` is now built directly into base R and is the current recommended default; this book uses it consistently.
+
+## NAs — R's version of a blank cell
+
+You likely noticed `NA` values scattered throughout the examples above and in  `static_file` when you ran `glimpse()` — particularly in columns like `Performance`, `ScaleScore`, or `Passing`, for students who weren't tested. `NA` is R's explicit way of representing missing data — the equivalent of a blank cell in Excel, except R refuses to silently ignore it the way a spreadsheet formula sometimes will.
+
+This matters in practice because **`NA` is contagious in calculations** unless you account for it. Essentially, R will not assume the meaning of missing data on its own. You need to explicitly tell it how to handle any missing data in calculations. Take a look at the examples below. 
+
+```{r}
+#returns NA, because there is at least one missing value
+mean(static_file$ScaleScore)          
+
+# tell R explicitly to ignore NAs first
+mean(static_file$ScaleScore, na.rm = TRUE)   
+```
+
+`na.rm = TRUE` ("NA, remove") is something you'll type often. R's refusal to quietly average over missing values without your explicit permission is a feature, not a bug — it forces you to make a conscious decision about how to handle missing data, and helps avoid accidents, rather than getting a number that silently includes (or excludes) it without your knowledge.
+
+To check how many missing values you have in a column, you sum up any "cell" that is `NA`:
+
+```{r}
+sum(is.na(static_file$ScaleScore))
+```
+
+## Basic operators
+
+These operators may look familiar, especially if you have used a SQL `WHERE` clause. The specific R syntax is different in some cases. 
+
+The most important syntax to notice is the equals operator: `==`. I think of it this way: a single equal sign, `=` is like a statement. It's used for assignment and says one value **is** equal to another. For example, the code below creates a variable called `my_number` and says it **is** equal to `1`. 
+
+```{r}
+my_number = 1
+
+# Print the value of the variable, number
+print(my_number)
+```
+
+The double equal sign, `==` is more like a question, **asking** whether the two items are equal. The result of `==` will answer your question with a `TRUE` or `FALSE`. The code below **asks** whether `my_number` is equal to certain values: 
+
+```{r}
+# Is the number 3?
+my_number == 3
+
+# Is the number 1?
+my_number == 1
+```
+
+Because the `==` operator returns a `TRUE` or `FALSE` value, it can be used in filtering operations, e.g., filter to include only results where the answer to the question is `TRUE`.
+
+The operators below also create `TRUE` or `FALSE` tests. You'll use these constantly inside `filter()`, which is covered in the chapter Common Functions. 
+
+| Operator | Meaning | Example |
+|------------------------|------------------------|------------------------|
+| `==` | equals (note: **two** equals signs — one is reserved for assignment in some contexts) | `Charter == 1` |
+| `!=` | not equal to | `County != "Maricopa"` |
+| `>`, `<`, `>=`, `<=` | greater/less than (or equal) | `ScaleScore >= 450` |
+| `&` | and | `Charter == 1 & County == "Pima"` |
+| `|` | or | `Subject == "ELA" | Subject == "Math"` |
+| `%in%` | value is one of several | `County %in% c("Maricopa", "Pima")` |
+| `!` | not / negation | `!is.na(ScaleScore)` |
+

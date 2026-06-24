@@ -1,0 +1,70 @@
+# Group, Summarize, and the Percentage-by-Group Pattern {#sec-group-summarize}
+
+If pivot tables are the single Excel skill you use most in accountability work, this chapter is its direct R equivalent — and the pattern you'll reach for constantly.
+
+## group_by() and summarize()
+
+```{r}
+#| include: false
+#| message: false
+library(tidyverse)
+
+static_file <- read_csv("data/static_file_sample.csv")
+```
+
+```{r}
+static_file |>
+  group_by(SchoolName) |>
+  summarize(
+    n_students    = n(),
+    avg_scale_score = mean(ScaleScore, na.rm = TRUE),
+    pct_passing   = mean(Passing, na.rm = TRUE)
+  )
+```
+
+Map this directly onto a pivot table: `group_by()` defines your "rows" (here, one row per school), and each line inside `summarize()` is a "values" field with whatever aggregation you want — `n()` for a count, `mean()` for an average, `sum()`, `median()`, `sd()` for standard deviation, and so on.
+
+One detail worth noticing: `mean(Passing, na.rm = TRUE)` is doing double duty here. Since `Passing` is coded as `0`/`1`, *averaging* it directly produces the **proportion** passing — a small trick worth remembering, since it means you often don't need a separate percentage calculation for any binary (0/1) indicator column, which describes a lot of the Static File's columns (`Charter`, `EL`, `SPED`, `ChronicAbsent`, and others).
+
+## Grouping by more than one field
+
+```{r}
+static_file |>
+  group_by(DistrictName, Subject) |>
+  summarize(avg_scale_score = mean(ScaleScore, na.rm = TRUE), .groups = "drop")
+```
+
+`.groups = "drop"` is worth including out of habit — without it, `summarize()` leaves the result still grouped by all but the last grouping variable, which can cause confusing behavior in whatever you do next. Explicitly dropping the grouping keeps your next step working on a clean, ungrouped result.
+
+## The mutate → group_by → summarize → ungroup pattern
+
+This is the single most useful combination move in this entire book, and it comes up constantly in accountability work: **calculating what percentage of the total each group represents.**
+
+Walking through it step by step, using EL status as the example — what percentage of all assessed students in each school are EL students?
+
+```{r}
+static_file |>
+  filter(!is.na(Performance)) |>                         # only assessed students
+  mutate(is_one = 1) |>                                    # step 1: a column of 1s, one per record
+  group_by(SchoolName) |>                                  # step 2: set up groups
+  summarize(
+    school_total = sum(is_one),                            # step 3: total records per school
+    el_total     = sum(EL)                                 # and EL records per school, in the same step
+  ) |>
+  ungroup() |>                                              # step 4: release the grouping
+  mutate(pct_el = el_total / school_total)                  # step 5: divide to get a percentage
+```
+
+Why each step earns its place:
+
+1. **`mutate(is_one = 1)`** gives you something reliable to `sum()` as a row counter. In this particular case `n()` inside `summarize()` would do the same job more directly — but this pattern matters once you want *two different kinds* of totals out of the same grouped calculation (as shown above, getting both `school_total` and `el_total` in one pass), which `n()` alone can't do.
+2. **`group_by(SchoolName)`** sets up the grouping — same as before.
+3. **`summarize()`** collapses each group down to one row, computing both totals you need simultaneously.
+4. **`ungroup()`** is the step it's easy to forget. After a `summarize()`, your result frame is still technically grouped (try running the chunk above without it, then run `mutate()` afterward separately — you'll get the right answer here, but in more complex cases a lingering group can silently produce a percentage calculated *within* a group you no longer intend). Ungrouping first is the safe habit.
+5. **`mutate(pct_el = el_total / school_total)`** is the actual division — now safely happening across the whole ungrouped result, not row-by-row-within-group.
+
+Once you're comfortable with this five-step shape, you'll find yourself reusing it for almost any "percent of total within a group" question — percent proficient, percent chronically absent, percent SPED, percent passing by subgroup. The columns change; the pattern doesn't.
+
+## A shortcut for the simplest version
+
+If you only need one straightforward percentage and don't need multiple custom totals in the same step, you can skip the `mutate(is_one = 1)` setup and lean on `n()` and `mean()` directly, as shown at the top of this chapter — that's usually the right call for a quick one-off. Reach for the fuller five-step pattern above when you need more than one total out of the same grouped pass, or when the percentage isn't a simple 0/1 average.

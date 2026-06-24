@@ -1,0 +1,141 @@
+# Common Functions {#sec-common-functions}
+
+This chapter covers the small set of functions that will carry the majority of your day-to-day work. Each one maps to something you already do in Excel, SAS, or Access — the goal here is naming the R equivalent and giving you a working recipe, not re-teaching the underlying logic you already have.
+
+All examples continue using `static_file`, loaded back in [Your First Import](#sec-first-import).
+
+## Cleaning messy column names first
+
+Real files rarely arrive with clean, consistent column names. Before doing anything else, it's worth knowing about `janitor::clean_names()` — genuinely one of the highest-value, lowest-effort functions in this entire book:
+
+```{r}
+#| include: false
+#| message: false
+library(tidyverse)
+
+static_file <- read_csv("data/static_file_sample.csv")
+```
+
+```{r}
+library(janitor)
+
+static_file_new_names <- static_file |> clean_names()
+
+names(static_file_new_names)[1:10]
+```
+
+This converts inconsistent capitalization, spaces, and punctuation in column names into a single consistent format (typically `snake_case`) automatically. Our Static File sample already has clean names, so you won't see dramatic changes here — but the moment you load a real Excel export with column headers like `"School Name "` (trailing space included) or `"% Proficient"`, this single line will save you real frustration. Use it by habit on every new file you import.
+
+## select() — choosing columns
+
+The equivalent of hiding columns in Excel, except explicit about what you're keeping rather than what you're hiding:
+
+```{r}
+static_file |> select(SchoolName, DistrictName, Subject, Performance)
+
+static_file |> select(-FirstName, -MiddleName, -LastName)   # drop specific columns, keep the rest
+
+static_file |> select(starts_with("EL"))   # all EL-related columns at once
+```
+
+## filter() — choosing rows
+
+The equivalent of AutoFilter, except it returns a clean result rather than just hiding rows visually:
+
+```{r}
+static_file |> filter(Subject == "Math")
+
+static_file |> filter(ScaleScore >= 450 & Subject == "ELA")
+
+static_file |> filter(County %in% c("Maricopa", "Pima"))
+```
+
+## mutate() — creating or changing a column
+
+The equivalent of adding a formula column, applied automatically to every row (recall vectorized behavior from [Fundamental Concepts](#sec-fundamental-concepts)):
+
+```{r}
+static_file |>
+  mutate(scale_score_rounded = round(ScaleScore))
+```
+
+## if_else() and case_when() — conditional logic
+
+`if_else()` handles a single yes/no condition — the direct equivalent of Excel's `IF()`:
+
+```{r}
+static_file |>
+  mutate(is_high_school = if_else(StudentGrade %in% c("9","10","11","12"), "High School", "Not High School"))
+```
+
+`case_when()` handles multiple conditions in sequence — the equivalent of a nested `IF()` chain, but far easier to read and far harder to make a logic error in, since it's evaluated top to bottom and stops at the first matching condition:
+
+```{r}
+static_file |>
+  mutate(performance_label = case_when(
+    Performance == 1 ~ "Minimally Proficient",
+    Performance == 2 ~ "Partially Proficient",
+    Performance == 3 ~ "Proficient",
+    Performance == 4 ~ "Highly Proficient",
+    TRUE              ~ NA_character_
+  ))
+```
+
+The final `TRUE ~ ...` line is your catch-all — anything that didn't match an earlier condition lands here. We've set it to `NA_character_` (an explicitly-typed missing text value) since `Performance` is `NA` for students who weren't assessed, and we want that to flow through cleanly rather than becoming a stray label.
+
+## arrange() — sorting
+
+```{r}
+static_file |> arrange(DistrictName, desc(ScaleScore))
+```
+
+Ascending by default; wrap a column in `desc()` to reverse just that one — useful when, as above, you want districts alphabetical but scores highest-first within each.
+
+## rename() — renaming columns
+
+```{r}
+static_file |> rename(school = SchoolName, district = DistrictName)
+```
+
+## count() — quick frequency tables
+
+```{r}
+static_file |> count(Subject)
+
+static_file |> count(County, Charter)   # cross-tab style: every County x Charter combination
+```
+
+## str_detect() — pattern matching inside text
+
+Part of the `stringr` package (included in the tidyverse), useful for searching within a text column — similar in spirit to Excel's `SEARCH()` or a SQL `LIKE` clause:
+
+```{r}
+static_file |> filter(str_detect(SchoolName, "Online"))
+```
+
+## round() — controlling decimal precision
+
+```{r}
+static_file |> mutate(scale_score_rounded = round(ScaleScore, 1))   # one decimal place
+```
+
+## Putting several together
+
+This is where the pipe (`|>`) starts to earn its keep — chaining several of the functions above into a single readable sequence:
+
+```{r}
+static_file |>
+  filter(Subject == "ELA", !is.na(Performance)) |>
+  select(SchoolName, DistrictName, Performance) |>
+  mutate(performance_label = case_when(
+    Performance == 1 ~ "Minimally Proficient",
+    Performance == 2 ~ "Partially Proficient",
+    Performance == 3 ~ "Proficient",
+    Performance == 4 ~ "Highly Proficient"
+  )) |>
+  arrange(DistrictName)
+```
+
+Read top to bottom as one sentence: *take the Static File, keep only assessed ELA records, keep just these columns, add a readable label, then sort by district.* Each line is a single, understandable step — and the whole sequence reads roughly the way you'd describe the task out loud to a colleague.
+
+The next chapter builds directly on this same pattern to tackle the task you'll do more than almost any other in accountability work: summarizing data by group.

@@ -1,0 +1,83 @@
+# Your First Import {#sec-first-import}
+
+Let's skip the abstract examples. You're going to load a real file and look at it, right now.
+
+## The dataset you'll use throughout this book
+
+Every example from here forward uses the same file: a synthetic, realistic version of an Arizona Department of Education **Static File** — the kind of student-level enrollment and assessment file that sits at the center of A–F accountability calculations. It has 80 columns and tens of thousands of student records across 30 schools, with the same structure, the same messiness, and the same kinds of questions you'd actually be asked to answer in real accountability work.
+
+Alongside the data file, you have a **codebook** — a separate reference describing exactly what every column means and what values it can take. Open it now and skim it; you'll come back to it constantly. Column names like `FAY`, `SGP_CCR`, or `ELFEP` are not self-explanatory on first glance, and that's normal — this is real accountability terminology, not something you're expected to intuit.
+
+## Loading the file
+
+```{r}
+library(tidyverse)
+
+static_file <- read_csv("data/static_file_sample.csv")
+```
+
+That's it. One function call, and 35,000+ rows of student data are now sitting in an object called `static_file`, ready to work with.
+
+A couple of things worth noticing immediately:
+
+- **`read_csv()`** is the tidyverse's function for reading comma-separated files — faster and more predictable than base R's older `read.csv()`.
+- **The arrow (`<-`)** is how you assign something a name in R. Read `static_file <- read_csv(...)` as "take the result of reading this file, and call it `static_file`." You'll use `<-` constantly; it's R's equivalent of typing a value into a named cell and having it stick.
+- **Nothing printed to your screen.** Unlike opening a file in Excel, reading data into R doesn't automatically *show* it to you — it just loads it into memory under the name you gave it. Looking at it is a separate, deliberate step, which is exactly what comes next.
+
+## Actually looking at what you just loaded
+
+```{r}
+#| eval: false
+
+glimpse(static_file)
+```
+
+**For this example, I'm showing only the first 10 columns, not all 80**
+
+```{r}
+#| echo: false
+
+glimpse(select(static_file, 1:10))
+```
+
+`glimpse()` gives you a compact, column-by-column preview — every column name, its data type, and the first several values, oriented so you can scan 80 columns without horizontal scrolling. This is usually the very first thing you'll run after loading any new file.
+
+A few more orientation commands worth running right away, especially on a file this wide:
+
+```{r}
+nrow(static_file)       # how many rows (records)?
+ncol(static_file)        # how many columns?
+n_distinct(static_file$SAISID)   # how many *unique students* — not the same as rows!
+```
+
+That last one matters more than it might look. This file has far more rows than unique students — a single student can appear multiple times (different subjects tested, multiple years of EL evaluation history, and so on). Run that line and you'll see the gap directly. This is your first real lesson in thinking about education data: **a row is a record, not necessarily a person**, and knowing the difference is the kind of thing that quietly breaks an analysis if you don't check it up front.
+
+If you want a fuller statistical snapshot of every column at once — not just types, but distributions, missing-value counts, and quick summary stats — the `skimr` package (installed back in [Initial Setup](#sec-initial-setup)) is worth knowing about:
+
+```{r}
+#| eval: false
+
+library(skimr)
+skim(static_file)
+```
+
+**For this example, I'm showing only a few selected columns, not all 80**
+
+```{r}
+#| echo: false
+
+library(skimr)
+static_file |> 
+    select(SchoolName, StateModel, FirstName, LastName, SAISID, Gender, StudentGrade, SPED, FAY, Subject, ScaleScore, Performance, AssessmentFamily, SGP_CCR, SGP_CCR_Category, SGT) |> 
+    skim()
+```
+
+For a file with 80 columns, this is often more useful than scrolling through read column names and to look for missing or duplicate values.
+
+## What you just did, in plain terms
+
+You loaded a file, and asked four key questions: *what's in here, how big is it, how many of these rows represent the same person, and what does each column generally look like?* That's probably a similar process to you what you already do when opening any new data set, but you just did it as two or three lines of code instead of a sequence of clicks. That creates a record of exactly what you did, so the process can be saved, repeated, and eventually automated. 
+
+This really pays off when you have to repeat a process. I've had workflows in spreadsheet where I had to write down a lengthy set of instructions to make sure I reproduced the same steps in each tab. Sometimes I could record a macro, but if I missed a step, or found a mistake, it could be problematic to undo all the actions. When working in R, you don't alter your original file, and you can quickly and easily alter steps and simply re-run the code. 
+
+The next chapter gives more details on the foundational pieces you just used — *data frames*, *vectors*, *etc*. We'll continue using the data you have loaded.

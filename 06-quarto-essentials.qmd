@@ -1,0 +1,99 @@
+# Quarto Essentials {#sec-quarto-essentials}
+
+Everything you've run so far has lived in a plain script. This chapter introduces the document format this entire book is written in, and that you'll use for most real deliverables going forward.
+
+```{r}
+#| include: false
+#| message: false
+library(tidyverse)
+
+static_file <- read_csv("data/static_file_sample.csv")
+```
+
+## What a Quarto document actually is
+
+A `.qmd` file mixes two things in one document: ordinary prose, written in plain Markdown, and executable code, sitting in marked-off sections called **chunks**. When you render the document, Quarto runs every code chunk, captures its output (tables, plots, printed values), and weaves that output directly into the surrounding prose to produce a finished document — HTML, Word, PDF, or slides.
+
+If you've ever built an Excel workbook with cells, a chart, and a text box explaining what the chart means, sitting next to each other — a Quarto document does the same job, except the "chart" and the "explanation" are generated and rendered together from one source, every single time you run it, with no risk of the picture and the explanation drifting out of sync after someone edits one but not the other.
+
+## Creating a code chunk
+
+In a `.qmd` file, a chunk is a fenced-off block, opened and closed with three backticks, with the language specified in curly braces:
+
+````
+```{r}
+static_file |> filter(Charter == 1) |> nrow()
+```
+````
+
+Inside Positron, you can insert one quickly with the keyboard shortcut `Ctrl + Alt + I` (Windows) or `Cmd + Option + I` (Mac), or by typing the fence characters directly.
+
+To run just that one chunk, click the small green play arrow that appears in the chunk's top-right corner in the editor, or place your cursor inside it and use the same `Ctrl/Cmd + Enter` shortcut from [Meet Positron](#sec-meet-positron).
+
+## Chunk options
+
+You can control how a chunk behaves and what shows up in your final document using `#|` options at the top of the chunk:
+
+```{r}
+#| echo: false
+#| message: false
+
+static_file |> filter(Charter == 1) |> nrow()
+```
+
+A few you'll use often:
+
+- `echo: false` — run the code, but don't show the code itself in the final document (only its output)
+- `eval: false` — show the code, but don't actually run it (useful for illustrating syntax without needing live data)
+- `message: false` / `warning: false` — suppress informational messages and warnings from cluttering your rendered output
+
+## The YAML header
+
+Every Quarto document opens with a fenced block of settings called the **YAML header**, between two lines of three dashes:
+
+```yaml
+---
+title: "School Performance Summary"
+format: html
+---
+```
+
+This is where you set document-wide options — title, author, output format, and more. A couple of settings worth knowing now:
+
+```yaml
+---
+title: "School Performance Summary"
+format:
+  html:
+    embed-resources: true
+---
+```
+
+`embed-resources: true` bundles all images, styles, and supporting files directly into a single output `.html` file — important if you intend to share that file with someone else and don't want broken images because a folder got separated from it. This is particularly relevant for slideshow output (`revealjs`), where you'll want one self-contained file to hand off or present from.
+
+For Word documents specifically, you can point Quarto at an existing `.docx` as a formatting template using `reference-doc`, so your output inherits an organization's existing letterhead, fonts, and styles rather than Quarto's defaults:
+
+```yaml
+format:
+  docx:
+    reference-doc: ade-template.docx
+```
+
+## Inline code
+
+You can drop a single computed value directly into a sentence of prose, rather than only in a chunk's table or plot output:
+         
+```{r}
+# This dataset includes `r length(unique(static_file$SchoolName))` schools.
+```
+
+When rendered, that backtick-`r`-expression is replaced with the actual computed number — and critically, it updates automatically every time you re-render against new data. This is a small thing with a large payoff for accountability reporting specifically: a sentence like "32 schools met the threshold this year" never goes stale, because it's not typed text, it's a live calculation.
+
+## Previewing and rendering
+
+Two related but distinct actions:
+
+- **Preview** — click the **Preview** button at the top of the editor (or `Ctrl/Cmd + Shift + K`) to render the document and see the result, typically opening in the Viewer pane or your browser. This is what you'll do constantly while building a document.
+- **Render** — produces the actual output file (`.html`, `.docx`, etc.) saved to disk, ready to share. Preview generally does this for you automatically behind the scenes.
+
+You now have everything mechanically necessary to follow along in your own `.qmd` file for the rest of this book. The next several chapters return to the data itself — starting with the small set of functions that will carry the large majority of your day-to-day work.

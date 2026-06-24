@@ -1,0 +1,103 @@
+# Importing From Everywhere {#sec-importing-everywhere}
+
+You've already imported one CSV. This chapter covers the rest of the places accountability data actually lives — Excel workbooks with multiple tabs, Google Sheets, and the brute-force-to-elegant progression that's worth understanding in that order.
+
+## From a single Excel file
+
+```{r}
+library(readxl)
+
+df <- read_excel("AF_Results_2026.xlsx")                    # first sheet by default
+df <- read_excel("AF_Results_2026.xlsx", sheet = "Schools")  # by sheet name
+df <- read_excel("AF_Results_2026.xlsx", sheet = 2)          # by sheet position
+df <- read_excel("AF_Results_2026.xlsx", range = "A1:H500")  # specific range, like a named range
+
+excel_sheets("AF_Results_2026.xlsx")  # list every sheet name without opening the file
+```
+
+**Tip:** `read_excel()` guesses each column's type by sampling rows. A numeric ID column with leading zeros, or one with occasional blanks, sometimes gets misread as text. Force types explicitly when that happens:
+
+```{r}
+df <- read_excel("AF_Results_2026.xlsx", col_types = c("text", "numeric", "date"))
+```
+
+## Combining multiple tabs — the brute-force way first
+
+Accountability files very often arrive as one workbook with a separate tab per year or per assessment window — exactly the situation `bind_rows()` solves. It's worth learning the obvious, slightly repetitive way first, so you understand exactly what's happening before reaching for the shortcut:
+
+```{r}
+year_2023 <- read_excel("AF_Results_Multi_Year.xlsx", sheet = "2023")
+year_2024 <- read_excel("AF_Results_Multi_Year.xlsx", sheet = "2024")
+year_2025 <- read_excel("AF_Results_Multi_Year.xlsx", sheet = "2025")
+
+combined <- bind_rows(year_2023, year_2024, year_2025)
+```
+
+`bind_rows()` stacks data frames on top of each other — same idea as copy-pasting one tab's data underneath another's, except it also handles columns that don't perfectly line up between sheets (filling in `NA` where a column is missing from one of them) and keeps a record of exactly what happened, rather than a manual paste you'd have to redo by hand next year.
+
+This approach works completely fine for three tabs. It gets tedious and error-prone at ten.
+
+## The same task, the elegant way
+
+Once you have more tabs than you want to type out by hand, combine reading and binding into one motion using `lapply()` and `map_dfr()`:
+
+```{r}
+sheet_names <- excel_sheets("AF_Results_Multi_Year.xlsx")
+
+list_of_dfs <- lapply(sheet_names, function(s) {
+  read_excel("AF_Results_Multi_Year.xlsx", sheet = s)
+})
+
+combined <- map_dfr(list_of_dfs, identity)
+```
+
+Walking through what's actually happening:
+
+1. **`excel_sheets()`** grabs every sheet name in the file automatically — you're no longer typing tab names by hand, so this scales to any number of tabs without more code.
+2. **`lapply()`** ("list apply") runs the same function — here, `read_excel()` for a given sheet — once per item in `sheet_names`, and collects every result into a single list. This is the list data structure from [Fundamental Concepts](#sec-fundamental-concepts) doing real work: a list of several data frames, one per sheet.
+3. **`map_dfr()`** ("map, data-frame row-bind") takes that list and stacks every data frame inside it into one combined data frame — functionally the same outcome as the manual `bind_rows()` above, but it works identically whether your list has 3 sheets or 30.
+
+A more compact, commonly-seen version of the same idea, often written directly with `map_dfr()` alone:
+
+```{r}
+combined <- sheet_names |>
+  map_dfr(~ read_excel("AF_Results_Multi_Year.xlsx", sheet = .x))
+```
+
+The `~` and `.x` here are `purrr` package shorthand for "for each sheet name, run `read_excel()` with this sheet" — don't worry about memorizing the exact syntax yet; recognizing the *pattern* (read every sheet, bind them all) is more important than the shorthand at this stage.
+
+## From CSV or other flat files
+
+```{r}
+library(readr)
+
+df <- read_csv("enrollment.csv")          # comma-separated
+df <- read_delim("data.txt", delim = "|") # pipe-delimited, tab, or any other separator
+```
+
+## From Google Sheets
+
+```{r}
+library(googlesheets4)
+
+gs4_auth()  # one-time interactive browser login; caches credentials after that
+
+df <- read_sheet("https://docs.google.com/spreadsheets/d/your-sheet-id-here")
+df <- read_sheet("your-sheet-id-here", sheet = "Raw Data")
+```
+
+**A wrinkle worth knowing about in advance:** `gs4_auth()` is designed for an interactive session — it expects to be able to pop open a browser window and wait for you to click through a login. That breaks the moment you try to render a Quarto document non-interactively (for example, an automated nightly report), since there's no human present to click anything.
+
+The fix is to authorize **non-interactively**, using a cached token instead of a live browser prompt:
+
+```{r}
+options(gargle_oauth_cache = ".secrets")   # set a fixed location for the cached token, once
+gs4_auth()                                  # run this once, interactively, to create the cached token
+
+# In your rendered/automated script, going forward:
+gs4_auth(cache = ".secrets", email = "your_service_account_or_email@example.gov")
+```
+
+In practice: authenticate once interactively to create the cached token, then point any automated or rendered script at that same cache going forward rather than calling the interactive flow again. For genuinely unattended automation (a scheduled job with no human involved at all), a Google **service account** is the more robust long-term answer, authenticated via `gs4_auth(path = "service-account-key.json")` — worth investigating once your Google Sheets workflow moves from occasional manual renders to a real recurring automation.
+
+The next chapter covers the remaining major source you'll encounter in accountability work — databases — along with the credential-security practices that matter once real login information is involved.

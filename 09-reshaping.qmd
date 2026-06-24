@@ -1,0 +1,76 @@
+# Reshaping {#sec-reshaping}
+
+This is the one core skill in this book with no clean single-click Excel equivalent — which is exactly why it's worth learning. It solves problems that are genuinely painful to do by hand, and it shows up constantly once you start preparing data for charts or multi-subject comparisons.
+
+## The problem reshaping solves
+
+The Static File has one row per student per subject-and-record-type combination, with a single `Subject` column (`ELA`, `Math`, `Sci`) and a single `Performance` column holding that subject's result. If you wanted to compare a student's ELA performance side-by-side with their Math performance — one row per student, one column per subject — the data isn't currently shaped that way. Reshaping is how you get there.
+
+## Wide to long: pivot_longer()
+
+"Long" format is what most of `dplyr` and `ggplot2` expect — generally, *more rows, fewer columns*, with one column identifying what's being measured and another holding the value. Our Static File is already mostly long-shaped with respect to `Subject`/`Performance` — but to demonstrate the mechanics clearly, imagine you'd instead been handed a wider file with separate columns per subject:
+
+```{r}
+#| include: false
+#| message: false
+library(tidyverse)
+
+static_file <- read_csv("data/static_file_sample.csv")
+```
+
+```{r}
+# Imagine a wide-format school summary like this:
+# SchoolName | ela_avg | math_avg | sci_avg
+
+wide_example <- static_file |>
+  group_by(SchoolName) |>
+  summarize(
+    ela_avg  = mean(ScaleScore[Subject == "ELA"], na.rm = TRUE),
+    math_avg = mean(ScaleScore[Subject == "Math"], na.rm = TRUE),
+    sci_avg  = mean(ScaleScore[Subject == "Sci"], na.rm = TRUE),
+    .groups = "drop"
+  )
+
+wide_example
+```
+
+Now reshape that wide summary into long format — one row per school *per subject*, rather than one row per school with three separate subject columns:
+
+```{r}
+long_example <- wide_example |>
+  pivot_longer(
+    cols = c(ela_avg, math_avg, sci_avg),
+    names_to = "subject",
+    values_to = "avg_scale_score"
+  )
+
+long_example
+```
+
+This is the shape you'd want for a `ggplot2` chart comparing average scale scores by subject and school (covered in [Visualization](#sec-visualization)) — long format is what lets you map a single "subject" column to color or facet, rather than writing three separate `geom_*()` calls, one per wide column.
+
+## Long to wide: pivot_wider() — the reverse
+
+Sometimes you want the opposite — collapsing long data back into a wide, side-by-side comparison table, which is often exactly what you want for a final report table a human will read:
+
+```{r}
+long_example |>
+  pivot_wider(names_from = subject, values_from = avg_scale_score)
+```
+
+This returns you to the original wide shape — useful as a final reporting step even if your analysis happened in long format along the way.
+
+## A more direct example using the Static File as-is
+
+Since `Subject` and `Performance` are already separate columns in long form, here's a reshape you could realistically run directly: turning a count of students by performance level into a side-by-side comparison table across subjects.
+
+```{r}
+static_file |>
+  filter(!is.na(Performance)) |>
+  count(Subject, Performance) |>
+  pivot_wider(names_from = Subject, values_from = n, values_fill = 0)
+```
+
+`values_fill = 0` is worth knowing about — if some Subject/Performance combination has zero students, `pivot_wider()` would otherwise leave that cell as `NA`. Setting `values_fill = 0` tells it to use an actual zero instead, which is almost always what you want for a count table.
+
+The general rule of thumb: **reach for `pivot_longer()` when you're heading toward a chart or further `group_by()` analysis, and `pivot_wider()` when you're heading toward a final, human-readable comparison table.**

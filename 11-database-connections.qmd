@@ -1,0 +1,111 @@
+# Database Connections {#sec-database-connections}
+
+If you already write SQL in Access, SSMS, or anywhere else, this chapter is the smallest jump in the entire book — your query logic doesn't change at all. What changes is how you establish the connection from R, and — just as important — how you do that safely.
+
+## A basic connection
+
+```{r}
+library(DBI)
+library(odbc)
+
+con <- dbConnect(odbc::odbc(), "Your_DSN_Name")   # DSN set up via ODBC Data Source Administrator
+
+df <- dbGetQuery(con, "SELECT * FROM dbo.enrollment WHERE school_year = 2026")
+
+dbDisconnect(con)  # close the connection when you're done
+```
+
+If you don't already have a DSN (Data Source Name) configured, you can instead supply full connection details directly:
+
+```{r}
+con <- dbConnect(odbc::odbc(),
+                  Driver   = "SQL Server",
+                  Server   = "your-server.domain.gov",
+                  Database = "Accountability",
+                  UID      = "your_username",
+                  PWD      = "your_password")
+```
+
+## Stop — that last example has a real problem
+
+Look at that connection again. The password is sitting in plain text, directly in a script. If that script ever gets committed to version control, emailed to a colleague, or simply left open on a shared screen, that credential is exposed. **Never type database credentials directly into a script** — this is a real, common mistake, not a theoretical one, and it's worth fixing before it becomes a habit.
+
+A few better options, roughly in order of preference:
+
+### Option 1: Windows / AD credentials (ideal where available)
+
+If your organization's database supports trusted authentication tied to your existing Windows login, you can skip passwords entirely:
+
+```{r}
+con <- dbConnect(odbc::odbc(),
+                  Driver   = "SQL Server",
+                  Server   = "your-server.domain.gov",
+                  Database = "Accountability",
+                  Trusted_Connection = "Yes")
+```
+
+No username or password anywhere in the script — your existing AD login does the work. This is the cleanest option when your environment supports it.
+
+### Option 2: The keyring package (strong option on Mac, and works on Windows too)
+
+The `keyring` package stores credentials securely in your operating system's native credential manager — Mac's Keychain, or Windows Credential Manager — rather than in any file you write:
+
+```{r}
+library(keyring)
+
+# One-time setup: store the credential securely (prompts you interactively, doesn't appear in your script)
+key_set("ade_database_password", username = "your_username")
+
+# In your actual script, going forward — retrieves the password without ever displaying or storing it in code
+con <- dbConnect(odbc::odbc(),
+                  Driver   = "SQL Server",
+                  Server   = "your-server.domain.gov",
+                  Database = "Accountability",
+                  UID      = "your_username",
+                  PWD      = key_get("ade_database_password", username = "your_username"))
+```
+
+On Mac, `keyring` integrates with the native Keychain and the Ticket Viewer app directly, which makes setup straightforward. On Windows, `keyring` also works, backed by Windows Credential Manager — the package is cross-platform, so the same `key_set()` / `key_get()` pattern applies on both systems without you needing to learn a separate workflow per OS.
+
+### Option 3: A config file outside your project, never committed to version control
+
+At minimum, if neither of the above is available in your environment, reference a separate config file stored somewhere secure — outside your project folder, and explicitly excluded from version control (a `.gitignore` entry) so it never accidentally gets shared:
+
+```{r}
+# config.yml, sitting in a secure location OUTSIDE your project folder — never inside it
+# database:
+#   server: your-server.domain.gov
+#   uid: your_username
+#   pwd: your_password
+
+library(config)
+db_config <- config::get(file = "/secure/location/config.yml", config = "database")
+
+con <- dbConnect(odbc::odbc(),
+                  Driver   = "SQL Server",
+                  Server   = db_config$server,
+                  UID      = db_config$uid,
+                  PWD      = db_config$pwd)
+```
+
+This is meaningfully better than hardcoding, but still weaker than Options 1 or 2 — a config file is still a file that could be misplaced or copied. Treat it as a fallback, not a first choice.
+
+## DuckDB and Parquet — a lighter-weight alternative worth knowing about
+
+Not every situation calls for a full database connection. For working with large local files efficiently — without needing a server, a DSN, or any credentials at all — **DuckDB** and the **Parquet** file format are increasingly common in the modern R (and Python) data ecosystem, and are part of the broader Posit/polyglot convergence mentioned back in [Why R First](#sec-why-r-first).
+
+```{r}
+library(duckdb)
+library(DBI)
+
+con <- dbConnect(duckdb())
+
+# Query a Parquet file directly, without even loading it fully into memory first
+result <- dbGetQuery(con, "SELECT * FROM 'static_file_sample.parquet' WHERE Subject = 'ELA'")
+
+dbDisconnect(con)
+```
+
+If you already know SQL, this can make the transition to R noticeably easier — you keep writing the query logic you already know, while gaining R's data-wrangling and visualization tools around it. Parquet files are also typically far smaller and faster to read than an equivalent CSV (worth knowing if you ever find yourself working with a Static File at full statewide scale, rather than the sample used in this book), and CSV remains a perfectly fine fallback wherever Parquet isn't already in use.
+
+The next chapter moves from getting data *in* to one of the most valuable things you can do once it's there — visualization.
