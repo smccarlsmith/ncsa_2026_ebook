@@ -25,9 +25,9 @@ Here's the argument that matters most for your day-to-day work: **there is a gro
 A few concrete examples:
 
 - The **SGP package** — used to calculate Student Growth Percentiles, a core concept in state accountability systems — is written in R. If your state's growth model uses SGP methodology, you may already work with some R code and data.
-- Researchers are actively building suites of tools that can simplify or perform common tasks. For example,  **Nathan Dadey's** ReportR package works directly with the same data format used to produce Student Growth Percentile calculations and related calculations. You can import your file, and create useful reports and analytics. Tools built by and for people doing exactly your kind of work are shareable and adaptable in R.
+- Researchers are actively building suites of tools that can simplify or perform common tasks. For example, **Nathan Dadey's** [ReportR package](https://github.com/ndadey/ReportR "github repository") works directly with the same data format used to produce Student Growth Percentile calculations and related calculations. You can import your file, and create useful reports and analytics. Tools built by and for people doing exactly your kind of work are shareable and adaptable in R.
 - When you hit a wall, there may be an analyst who's solved your exact problem in R, in a forum post, a GitHub repo.
-- Finally, since your analysis will exist fully as text, any part of the process can be copy/pasted to an AI tool; with many education researchers working in R, you can often receive answers very tailored to your needs. 
+- Finally, since your analysis will exist fully as text, any part of the process can be copy/pasted to an AI tool; with many education researchers working in R, you can often receive answers very tailored to your needs.
 
 Learning the language your professional community already speaks can reduce the time you spend troubleshooting.
 
