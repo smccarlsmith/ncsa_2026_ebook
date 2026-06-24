@@ -15,6 +15,7 @@ This belongs in a plain `.R` script rather than a `.qmd` document, since the goa
 ## Step 1: Read every tab
 
 ```{r}
+#| eval: false
 library(tidyverse)
 library(readxl)
 library(janitor)
@@ -32,6 +33,7 @@ Notice the addition of `mutate(source_sheet = .x)` inside the map step — taggi
 ## Step 2: Clean and combine
 
 ```{r}
+#| eval: false
 tidy_data <- raw_list |>
   clean_names() |>
   filter(!is.na(scale_score))   # drop non-assessed records for this particular analysis
@@ -42,6 +44,7 @@ tidy_data <- raw_list |>
 Suppose each year's tab had separate columns per subject (`ela_score`, `math_score`, `sci_score`) — a common real-world shape for a multi-year export. Reshape into one row per student per subject:
 
 ```{r}
+#| eval: false
 tidy_long <- tidy_data |>
   pivot_longer(
     cols = ends_with("_score"),
@@ -58,6 +61,7 @@ tidy_long <- tidy_data |>
 Before trusting any pipeline's output, generate counts and summary statistics you can quickly eyeball against what you'd expect:
 
 ```{r}
+#| eval: false
 validation_summary <- tidy_long |>
   group_by(source_sheet, subject) |>
   summarize(
@@ -75,6 +79,7 @@ This is the kind of table you'd glance at every time the pipeline runs — a sud
 ## Step 5: Write outputs to separate subfolders
 
 ```{r}
+#| eval: false
 dir.create("output/tidy", recursive = TRUE, showWarnings = FALSE)
 dir.create("output/validation", recursive = TRUE, showWarnings = FALSE)
 

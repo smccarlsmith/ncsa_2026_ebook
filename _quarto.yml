@@ -43,7 +43,6 @@ format:
     code-copy: true
     fig-align: center
     toc-depth: 3
-    embed-resources: true
 
 execute:
   echo: true

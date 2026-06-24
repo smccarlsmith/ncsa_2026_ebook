@@ -5,6 +5,7 @@ If you already write SQL in Access, SSMS, or anywhere else, this chapter is the 
 ## A basic connection
 
 ```{r}
+#| eval: false
 library(DBI)
 library(odbc)
 
@@ -18,6 +19,7 @@ dbDisconnect(con)  # close the connection when you're done
 If you don't already have a DSN (Data Source Name) configured, you can instead supply full connection details directly:
 
 ```{r}
+#| eval: false
 con <- dbConnect(odbc::odbc(),
                   Driver   = "SQL Server",
                   Server   = "your-server.domain.gov",
@@ -37,6 +39,7 @@ A few better options, roughly in order of preference:
 If your organization's database supports trusted authentication tied to your existing Windows login, you can skip passwords entirely:
 
 ```{r}
+#| eval: false
 con <- dbConnect(odbc::odbc(),
                   Driver   = "SQL Server",
                   Server   = "your-server.domain.gov",
@@ -51,6 +54,7 @@ No username or password anywhere in the script — your existing AD login does t
 The `keyring` package stores credentials securely in your operating system's native credential manager — Mac's Keychain, or Windows Credential Manager — rather than in any file you write:
 
 ```{r}
+#| eval: false
 library(keyring)
 
 # One-time setup: store the credential securely (prompts you interactively, doesn't appear in your script)
@@ -72,6 +76,8 @@ On Mac, `keyring` integrates with the native Keychain and the Ticket Viewer app 
 At minimum, if neither of the above is available in your environment, reference a separate config file stored somewhere secure — outside your project folder, and explicitly excluded from version control (a `.gitignore` entry) so it never accidentally gets shared:
 
 ```{r}
+#| eval: false
+
 # config.yml, sitting in a secure location OUTSIDE your project folder — never inside it
 # database:
 #   server: your-server.domain.gov
@@ -95,6 +101,7 @@ This is meaningfully better than hardcoding, but still weaker than Options 1 or 
 Not every situation calls for a full database connection. For working with large local files efficiently — without needing a server, a DSN, or any credentials at all — **DuckDB** and the **Parquet** file format are increasingly common in the modern R (and Python) data ecosystem, and are part of the broader Posit/polyglot convergence mentioned back in [Why R First](#sec-why-r-first).
 
 ```{r}
+#| eval: false
 library(duckdb)
 library(DBI)
 

@@ -6,27 +6,29 @@ The first project produced a clean, validated dataset behind the scenes. This on
 
 Start with a new `.qmd` file (see [Quarto Essentials](#sec-quarto-essentials) for the mechanics), with a YAML header set up for revealjs slides and self-contained sharing:
 
-```yaml
----
-title: "School Performance Summary"
-subtitle: "Static File Sample — Current Year"
-format:
-  revealjs:
-    embed-resources: true
-    controls: true
-execute:
-  echo: false
-  warning: false
-  message: false
----
+
+```{r}
+# ---
+# title: "School Performance Summary"
+# subtitle: "Static File Sample — Current Year"
+# format:
+#   revealjs:
+#     embed-resources: true
+#     controls: true
+# execute:
+#   echo: false
+#   warning: false
+#   message: false
+# ---
 ```
+
 
 `embed-resources: true` matters here specifically because this file is meant to be shared — a single self-contained `.html` that opens correctly on anyone's machine, with no separate image folder that could go missing. `echo: false` at the document level means code won't show by default in any chunk unless you explicitly override it per-chunk — appropriate for a presentation meant for an audience, as opposed to the code-forward reference chapters earlier in this book.
 
 ## Load libraries and data once, near the top
 
 ```{r}
-#| include: false
+#| eval: false
 
 library(tidyverse)
 library(plotly)
@@ -40,10 +42,12 @@ static_file <- read_csv("data/static_file_sample.csv")
 
 ## A slide with an interactive visualization
 
-````
+
 ## Scale Score Distribution by Subject
 
 ```{r}
+#| eval: false
+
 p <- static_file |>
   filter(!is.na(ScaleScore)) |>
   ggplot(aes(x = ScaleScore, fill = Subject)) +
@@ -53,22 +57,22 @@ p <- static_file |>
 
 ggplotly(p)
 ```
-````
+
 
 Because this is wrapped in `ggplotly()` (from [Visualization](#sec-visualization)), anyone viewing the rendered slide can hover over bars for exact values, zoom into a score range, or toggle subjects on and off — interactivity a static image in a PDF simply can't offer.
 
 ## A slide with an interactive table
 
-````
+
 ## Explore the Data
 
 ```{r}
+#| eval: false
 static_file |>
   filter(!is.na(Performance)) |>
   select(SchoolName, DistrictName, Subject, Performance, ScaleScore) |>
   datatable(filter = "top", options = list(pageLength = 8))
 ```
-````
 
 This single chunk hands your audience a live, searchable, filterable version of the underlying data, directly inside the presentation — rather than a static screenshot of a table they can't interact with.
 

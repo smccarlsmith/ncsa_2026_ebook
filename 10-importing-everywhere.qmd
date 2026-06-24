@@ -5,6 +5,7 @@ You've already imported one CSV. This chapter covers the rest of the places acco
 ## From a single Excel file
 
 ```{r}
+#| eval: false
 library(readxl)
 
 df <- read_excel("AF_Results_2026.xlsx")                    # first sheet by default
@@ -18,6 +19,7 @@ excel_sheets("AF_Results_2026.xlsx")  # list every sheet name without opening th
 **Tip:** `read_excel()` guesses each column's type by sampling rows. A numeric ID column with leading zeros, or one with occasional blanks, sometimes gets misread as text. Force types explicitly when that happens:
 
 ```{r}
+#| eval: false
 df <- read_excel("AF_Results_2026.xlsx", col_types = c("text", "numeric", "date"))
 ```
 
@@ -26,6 +28,7 @@ df <- read_excel("AF_Results_2026.xlsx", col_types = c("text", "numeric", "date"
 Accountability files very often arrive as one workbook with a separate tab per year or per assessment window — exactly the situation `bind_rows()` solves. It's worth learning the obvious, slightly repetitive way first, so you understand exactly what's happening before reaching for the shortcut:
 
 ```{r}
+#| eval: false
 year_2023 <- read_excel("AF_Results_Multi_Year.xlsx", sheet = "2023")
 year_2024 <- read_excel("AF_Results_Multi_Year.xlsx", sheet = "2024")
 year_2025 <- read_excel("AF_Results_Multi_Year.xlsx", sheet = "2025")
@@ -42,6 +45,7 @@ This approach works completely fine for three tabs. It gets tedious and error-pr
 Once you have more tabs than you want to type out by hand, combine reading and binding into one motion using `lapply()` and `map_dfr()`:
 
 ```{r}
+#| eval: false
 sheet_names <- excel_sheets("AF_Results_Multi_Year.xlsx")
 
 list_of_dfs <- lapply(sheet_names, function(s) {
@@ -60,6 +64,7 @@ Walking through what's actually happening:
 A more compact, commonly-seen version of the same idea, often written directly with `map_dfr()` alone:
 
 ```{r}
+#| eval: false
 combined <- sheet_names |>
   map_dfr(~ read_excel("AF_Results_Multi_Year.xlsx", sheet = .x))
 ```
@@ -69,6 +74,7 @@ The `~` and `.x` here are `purrr` package shorthand for "for each sheet name, ru
 ## From CSV or other flat files
 
 ```{r}
+#| eval: false
 library(readr)
 
 df <- read_csv("enrollment.csv")          # comma-separated
@@ -78,6 +84,7 @@ df <- read_delim("data.txt", delim = "|") # pipe-delimited, tab, or any other se
 ## From Google Sheets
 
 ```{r}
+#| eval: false
 library(googlesheets4)
 
 gs4_auth()  # one-time interactive browser login; caches credentials after that
@@ -91,6 +98,7 @@ df <- read_sheet("your-sheet-id-here", sheet = "Raw Data")
 The fix is to authorize **non-interactively**, using a cached token instead of a live browser prompt:
 
 ```{r}
+#| eval: false
 options(gargle_oauth_cache = ".secrets")   # set a fixed location for the cached token, once
 gs4_auth()                                  # run this once, interactively, to create the cached token
 
